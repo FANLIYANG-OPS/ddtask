@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">钉钉定时</string>
+    <string name="app_description">设置定时任务，到点自动打开钉钉</string>
+    <string name="dingtalk_installed">钉钉：已安装 ✓</string>
+    <string name="dingtalk_not_installed">钉钉：未安装，请先安装钉钉</string>
+    <string name="add_task">添加定时任务</string>
+    <string name="edit_task">编辑定时任务</string>
+    <string name="pick_time">选择时间</string>
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+    <string name="delete">删除</string>
+    <string name="delete_task">删除任务</string>
+    <string name="delete_task_confirm">确定删除 %1$s 的定时任务吗？</string>
+    <string name="empty_tasks">暂无定时任务\n点击右下角 + 添加</string>
+    <string name="open_dingtalk">打开钉钉</string>
+    <string name="repeat_daily">每天重复</string>
+    <string name="once">仅一次</string>
+    <string name="task_label_hint">备注（可选）</string>
+    <string name="task_saved">定时任务已保存</string>
+    <string name="exact_alarm_title">需要精确闹钟权限</string>
+    <string name="exact_alarm_message">Android 12 及以上系统需要授予「闹钟和提醒」权限，定时任务才能准时触发。请在设置中允许本应用使用精确闹钟。</string>
+    <string name="go_settings">去设置</string>
+    <string name="later">稍后</string>
+    <string name="keep_screen_on">屏幕常亮</string>
+    <string name="keep_screen_on_desc">定时打开钉钉时，屏幕保持常亮不熄灭（需授予下方权限）</string>
+    <string name="dim_screen">屏幕最暗</string>
+    <string name="dim_screen_desc">开启后屏幕亮度调至最低</string>
+    <string name="write_settings_title">需要修改系统设置权限</string>
+    <string name="write_settings_message">调节屏幕亮度需要授予「修改系统设置」权限，请在设置中允许。</string>
+    <string name="keep_screen_on_permission_title">屏幕常亮所需权限</string>
+    <string name="keep_screen_on_permission_message">为保证钉钉打开后屏幕不熄灭，请授予以下权限：\n\n1. 修改系统设置（延长熄屏时间）\n2. 悬浮窗权限（在其他 App 上方保持常亮）</string>
+    <string name="grant_overlay_permission">授予悬浮窗权限</string>
+    <string name="screen_control_channel">屏幕控制</string>
+    <string name="screen_control_channel_desc">定时打开钉钉时保持屏幕常亮</string>
+    <string name="screen_keep_on_active">屏幕常亮中</string>
+    <string name="screen_keep_on_desc">定时任务已触发，点击停止常亮</string>
+    <string name="stop_screen_keep_on">停止常亮</string>
+    <string name="dingtalk_not_installed_toast">未安装钉钉，请先安装钉钉</string>
+    <string name="dingtalk_launch_failed">无法打开钉钉</string>
+</resources>

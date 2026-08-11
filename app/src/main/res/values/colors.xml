@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#0089FF</color>
+    <color name="primary_dark">#0066CC</color>
+    <color name="secondary">#FF6B35</color>
+    <color name="status_ok">#2E7D32</color>
+    <color name="status_error">#C62828</color>
+    <color name="ic_launcher_background">#0089FF</color>
+</resources>
