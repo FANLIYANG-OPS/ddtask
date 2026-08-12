@@ -9,13 +9,13 @@ data class TaskTemplateEntry(
 enum class TaskTemplate(val entries: List<TaskTemplateEntry>) {
     SUMMER(
         listOf(
-            TaskTemplateEntry(8, 30, "上班"),
+            TaskTemplateEntry(8, 0, "上班"),
             TaskTemplateEntry(18, 0, "下班")
         )
     ),
     WINTER(
         listOf(
-            TaskTemplateEntry(8, 30, "上班"),
+            TaskTemplateEntry(8, 0, "上班"),
             TaskTemplateEntry(17, 30, "下班")
         )
     );
