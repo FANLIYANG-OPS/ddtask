@@ -18,6 +18,7 @@ data class AppConfigExport(
     val keywordsConfigured: Boolean = false
 ) {
     companion object {
+        /** Unchanged so v1.12.0 exports/imports remain compatible. */
         const val CURRENT_VERSION = 1
     }
 }

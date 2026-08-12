@@ -114,7 +114,7 @@
     <string name="edit_keywords_config">修改配置</string>
     <string name="last_open_dingtalk">上次打开钉钉：%1$s\n触发内容：%2$s</string>
     <string name="config_io_title">配置备份</string>
-    <string name="config_io_desc">导出/导入 JSON 配置，包含定时任务、邮件、通知关键字及屏幕设置</string>
+    <string name="config_io_desc">导出/导入 JSON 配置，包含定时任务、邮件、通知关键字及屏幕设置（兼容 v1.12.0 格式）</string>
     <string name="export_config">导出配置</string>
     <string name="import_config">导入配置</string>
     <string name="config_json_hint">JSON 配置</string>
