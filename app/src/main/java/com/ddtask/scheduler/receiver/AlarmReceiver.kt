@@ -11,6 +11,7 @@ import com.ddtask.scheduler.service.ScreenControlService
 import com.ddtask.scheduler.util.SettingsStorage
 import com.ddtask.scheduler.util.TaskStorage
 
+/** 定时任务到点广播：可选常亮 → 打开钉钉 → 延迟隐藏 → 按重复模式重新调度或禁用。 */
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {

@@ -14,6 +14,7 @@ import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
+/** 通过 JavaMail 在后台线程发送 SMTP 邮件（打卡通知 / 测试邮件）。 */
 object EmailSender {
 
     fun sendClockInSuccess(
@@ -70,6 +71,7 @@ object EmailSender {
             put("mail.smtp.port", storage.smtpPort.toString())
             put("mail.smtp.auth", "true")
             if (storage.smtpPort == 465) {
+                // QQ 邮箱等常用 465 端口 SSL
                 put("mail.smtp.socketFactory.port", "465")
                 put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory")
                 put("mail.smtp.socketFactory.fallback", "false")

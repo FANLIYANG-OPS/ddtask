@@ -10,6 +10,7 @@ import com.ddtask.scheduler.receiver.AlarmReceiver
 import com.ddtask.scheduler.util.ScheduleCalculator
 import com.ddtask.scheduler.util.TaskStorage
 
+/** 使用 [AlarmManager] 注册/取消精确闹钟，每个任务 id 对应独立 PendingIntent。 */
 class AlarmScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

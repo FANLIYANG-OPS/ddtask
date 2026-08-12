@@ -1,5 +1,6 @@
 package com.ddtask.scheduler.util
 
+/** 打卡相关关键字的默认值、解析与模糊匹配。 */
 object ClockInDetector {
 
     const val DINGTALK_PACKAGE = "com.alibaba.android.rimet"
@@ -20,6 +21,7 @@ object ClockInDetector {
 
     fun defaultSuccessKeywordsText(): String = DEFAULT_SUCCESS_KEYWORDS.joinToString("\n")
 
+    /** 支持换行、逗号、分号分隔；空输入时回退到 [fallback]。 */
     fun parseKeywords(raw: String, fallback: List<String> = emptyList()): List<String> {
         val parsed = raw.split('\n', ',', '，', ';', '；')
             .map { it.trim() }

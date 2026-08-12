@@ -5,6 +5,7 @@ import android.util.Patterns
 import android.widget.Toast
 import com.ddtask.scheduler.R
 
+/** 邮箱配置表单的加载、校验与写入 [NotificationStorage]。 */
 object EmailConfigHelper {
 
     data class EmailFormData(

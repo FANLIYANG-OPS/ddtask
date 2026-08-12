@@ -13,6 +13,7 @@ import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
 import com.ddtask.scheduler.util.ScreenKeepOnController
 
+/** 前台服务：定时触发后保持屏幕常亮，通知栏可手动停止。 */
 class ScreenControlService : Service() {
 
     private var keepOnController: ScreenKeepOnController? = null

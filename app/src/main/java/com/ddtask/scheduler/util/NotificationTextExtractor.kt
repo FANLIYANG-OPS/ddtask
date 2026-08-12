@@ -3,6 +3,7 @@ package com.ddtask.scheduler.util
 import android.app.Notification
 import android.os.Bundle
 
+/** 合并 Notification extras 中的标题、正文、大文本等字段，供关键字匹配使用。 */
 object NotificationTextExtractor {
 
     fun extract(extras: Bundle): String {

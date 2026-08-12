@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/** 通知 Tab：手动打卡 / 打卡通知开关，以及钉钉状态与屏幕相关通用设置。 */
 class NotificationsFragment : Fragment() {
 
     private var _binding: FragmentNotificationsBinding? = null
@@ -126,6 +127,7 @@ class NotificationsFragment : Fragment() {
         }
     }
 
+    /** 开启手动打卡前确认通知监听已授权。 */
     private fun ensureListenerEnabled(): Boolean {
         if (!NotificationAccess.isEnabled(requireContext())) {
             MaterialAlertDialogBuilder(requireContext())
@@ -141,6 +143,7 @@ class NotificationsFragment : Fragment() {
         return true
     }
 
+    /** 开启打卡通知前确认 SMTP 已配置且通知监听可用。 */
     private fun ensureEmailReady(): Boolean {
         if (!notificationStorage.isConfigured()) {
             MaterialAlertDialogBuilder(requireContext())

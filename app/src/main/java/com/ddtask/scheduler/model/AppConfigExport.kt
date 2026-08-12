@@ -1,5 +1,6 @@
 package com.ddtask.scheduler.model
 
+/** 导出/导入 JSON 的数据结构；[CURRENT_VERSION] 保持为 1 以兼容 v1.12.0。 */
 data class AppConfigExport(
     val version: Int = CURRENT_VERSION,
     val exportedAt: Long = System.currentTimeMillis(),

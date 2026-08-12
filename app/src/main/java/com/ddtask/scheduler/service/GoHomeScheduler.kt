@@ -7,6 +7,10 @@ import android.content.Intent
 import android.os.Build
 import com.ddtask.scheduler.receiver.GoHomeReceiver
 
+/**
+ * 定时打开钉钉后的延迟操作调度。
+ * 打开钉钉约 1 分钟后短暂回到本应用，再重新拉起钉钉以保持进程活跃。
+ */
 class GoHomeScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

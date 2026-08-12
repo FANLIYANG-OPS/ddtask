@@ -2,6 +2,7 @@ package com.ddtask.scheduler.util
 
 import android.content.Context
 
+/** 通知监听、邮件 SMTP、关键字及最近触发记录的 SharedPreferences 封装。 */
 class NotificationStorage(context: Context) {
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -69,10 +70,12 @@ class NotificationStorage(context: Context) {
             smtpHost.isNotBlank()
     }
 
+    /** 5 分钟内不重复发邮件，避免同一条通知多次触发。 */
     fun shouldSkipDuplicateEmail(): Boolean {
         return System.currentTimeMillis() - lastSentAt < DUPLICATE_INTERVAL_MS
     }
 
+    /** 1 分钟内不重复打开钉钉，避免通知风暴。 */
     fun shouldSkipDuplicateOpen(): Boolean {
         return System.currentTimeMillis() - lastOpenDingTalkAt < OPEN_DINGTALK_INTERVAL_MS
     }

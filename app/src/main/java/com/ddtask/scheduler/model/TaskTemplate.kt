@@ -6,6 +6,7 @@ data class TaskTemplateEntry(
     val label: String
 )
 
+/** 夏/冬季上下班预设，生成两个「中国工作日」重复任务。 */
 enum class TaskTemplate(val entries: List<TaskTemplateEntry>) {
     SUMMER(
         listOf(

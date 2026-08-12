@@ -5,6 +5,7 @@ import com.ddtask.scheduler.model.ScheduledTask
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
+/** 定时任务列表的 Gson JSON 持久化（SharedPreferences）。 */
 class TaskStorage(context: Context) {
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)

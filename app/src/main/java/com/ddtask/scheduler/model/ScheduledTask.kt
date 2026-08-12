@@ -1,5 +1,6 @@
 package com.ddtask.scheduler.model
 
+/** 用户创建的定时打开钉钉任务。 */
 data class ScheduledTask(
     val id: Long,
     val hour: Int,
@@ -12,6 +13,7 @@ data class ScheduledTask(
 ) {
     fun timeText(): String = String.format("%02d:%02d", hour, minute)
 
+    /** 兼容旧版仅含 repeatDaily 字段的数据。 */
     fun effectiveMode(): RepeatMode {
         if (repeatMode != null) return RepeatMode.fromKey(repeatMode)
         return if (repeatDaily) RepeatMode.DAILY else RepeatMode.ONCE

@@ -13,6 +13,7 @@ import java.time.ZonedDateTime
 import java.util.Calendar
 import kotlin.random.Random
 
+/** 根据重复模式计算下次闹钟触发时间；工作日模式结合中国节假日日历，并加 ±60s 随机抖动。 */
 class ScheduleCalculator(context: Context) {
 
     private val holidayCalendar = ChineseHolidayCalendar.getInstance(context)
@@ -87,6 +88,7 @@ class ScheduleCalculator(context: Context) {
         }
     }
 
+    /** 在目标时刻附近随机偏移，避免多任务同一秒触发。 */
     private fun applyJitter(baseMs: Long): Long {
         val jitterMs = Random.nextInt(-JITTER_SECONDS, JITTER_SECONDS + 1) * 1000L
         val withJitter = baseMs + jitterMs

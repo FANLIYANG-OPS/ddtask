@@ -3,6 +3,7 @@ package com.ddtask.scheduler.util
 import android.content.Context
 import android.provider.Settings
 
+/** 读写系统屏幕亮度；关闭「屏幕最暗」时恢复用户原亮度。 */
 object BrightnessController {
 
     private const val MIN_BRIGHTNESS = 1

@@ -8,6 +8,7 @@ import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.service.ScreenControlService
 import com.ddtask.scheduler.util.DingTalkLauncher
 
+/** 定时打开钉钉后的「回主界面 / 再次拉起钉钉」延迟广播接收器。 */
 class GoHomeReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.provider.Settings
 import com.ddtask.scheduler.service.ClockInNotificationListenerService
 
+/** 检查本应用的通知监听服务是否已在系统设置中授权。 */
 object NotificationAccess {
 
     fun isEnabled(context: Context): Boolean {

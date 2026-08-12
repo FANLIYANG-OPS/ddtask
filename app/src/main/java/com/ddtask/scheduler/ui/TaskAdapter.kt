@@ -7,6 +7,7 @@ import com.ddtask.scheduler.R
 import com.ddtask.scheduler.databinding.ItemTaskBinding
 import com.ddtask.scheduler.model.ScheduledTask
 
+/** 任务列表 RecyclerView：展示时间/备注/重复方式，支持开关、编辑、删除。 */
 class TaskAdapter(
     private val onEdit: (ScheduledTask) -> Unit,
     private val onToggle: (ScheduledTask, Boolean) -> Unit,

@@ -23,6 +23,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 
+/** 任务 Tab：列表展示、添加/编辑/删除定时任务，并与 [AlarmScheduler] 同步。 */
 class TasksFragment : Fragment() {
 
     private var _binding: FragmentTasksBinding? = null

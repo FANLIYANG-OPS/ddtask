@@ -20,12 +20,14 @@ import com.ddtask.scheduler.util.EmailSender
 import com.ddtask.scheduler.util.NotificationStorage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
+/** 设置 Tab 单页：自上而下为监听配置、邮件配置、备份导入导出。 */
 class SettingsHostFragment : Fragment() {
 
     private var _binding: FragmentSettingsHostBinding? = null
     private val binding get() = _binding!!
 
     private lateinit var notificationStorage: NotificationStorage
+    /** 已保存后折叠表单，点击「编辑」再展开。 */
     private var keywordsEditing = false
     private var emailEditing = false
 
@@ -222,6 +224,7 @@ class SettingsHostFragment : Fragment() {
             .show()
     }
 
+    /** 导入成功后刷新监听与邮件两块的折叠状态。 */
     private fun importConfig(json: String) {
         try {
             ConfigManager(requireContext()).importJson(json)

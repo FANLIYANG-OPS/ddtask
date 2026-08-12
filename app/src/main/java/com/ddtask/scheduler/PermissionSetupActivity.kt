@@ -11,6 +11,7 @@ import com.ddtask.scheduler.util.PermissionSetupHelper
 import com.ddtask.scheduler.util.SettingsStorage
 import com.ddtask.scheduler.R
 
+/** 首次启动时的权限引导页，逐步检查并跳转系统设置授予所需权限。 */
 class PermissionSetupActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPermissionSetupBinding

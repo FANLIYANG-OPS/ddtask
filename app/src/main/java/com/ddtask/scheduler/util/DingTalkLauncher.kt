@@ -3,6 +3,7 @@ package com.ddtask.scheduler.util
 import android.content.Context
 import android.content.Intent
 
+/** 检测钉钉是否安装并通过 Launcher Intent 启动。 */
 object DingTalkLauncher {
 
     const val PACKAGE_NAME = "com.alibaba.android.rimet"

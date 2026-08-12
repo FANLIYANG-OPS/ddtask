@@ -7,6 +7,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 
+/** 将任务、屏幕、通知/邮件/关键字等配置导出为 JSON，并支持导入（兼容 v1.12.0）。 */
 class ConfigManager(private val context: Context) {
 
     private val gson = Gson()
@@ -81,6 +82,7 @@ class ConfigManager(private val context: Context) {
         return config.triggerKeywords.isNotBlank() || config.successKeywords.isNotBlank()
     }
 
+    /** 写入各存储并重建全部闹钟（导入会先取消旧任务）。 */
     private fun applyConfig(config: AppConfigExport, keywordsConfigured: Boolean) {
         taskStorage.getAll().forEach { alarmScheduler.cancel(it.id) }
         taskStorage.saveAll(config.tasks.orEmpty())

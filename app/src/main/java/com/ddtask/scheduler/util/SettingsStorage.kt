@@ -2,6 +2,7 @@ package com.ddtask.scheduler.util
 
 import android.content.Context
 
+/** 屏幕常亮/最暗、亮度与熄屏超时备份值，以及权限向导完成标记。 */
 class SettingsStorage(context: Context) {
 
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
