@@ -7,7 +7,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.ddtask.scheduler.databinding.ActivityMainBinding
-import com.ddtask.scheduler.fragment.SettingsHostFragment
 import com.ddtask.scheduler.fragment.TasksFragment
 import com.ddtask.scheduler.ui.MainPagerAdapter
 import com.ddtask.scheduler.util.SettingsStorage
@@ -83,15 +82,6 @@ class MainActivity : AppCompatActivity() {
 
     fun openTab(index: Int) {
         binding.viewPager.setCurrentItem(index, false)
-    }
-
-    fun openSettingsSection(section: String) {
-        openTab(TAB_SETTINGS)
-        binding.viewPager.post {
-            val host = supportFragmentManager.findFragmentByTag("f$TAB_SETTINGS")
-                as? SettingsHostFragment
-            host?.showSection(section)
-        }
     }
 
     fun openPermissionSetup() {

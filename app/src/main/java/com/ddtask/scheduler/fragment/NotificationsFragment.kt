@@ -46,9 +46,6 @@ class NotificationsFragment : Fragment() {
         notificationStorage = NotificationStorage(requireContext())
         settingsStorage = SettingsStorage(requireContext())
         setupScreenSettings()
-        binding.btnRecheckPermissions.setOnClickListener {
-            (activity as? MainActivity)?.openPermissionSetup()
-        }
         loadSwitches()
         binding.switchAutoOpenDingtalk.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && !ensureListenerEnabled()) {
@@ -150,7 +147,7 @@ class NotificationsFragment : Fragment() {
                 .setTitle(R.string.email_config_required_title)
                 .setMessage(R.string.email_config_required_message)
                 .setPositiveButton(R.string.go_settings) { _, _ ->
-                    (activity as? MainActivity)?.openSettingsSection(SettingsHostFragment.SECTION_EMAIL)
+                    (activity as? MainActivity)?.openTab(MainActivity.TAB_SETTINGS)
                 }
                 .setNegativeButton(R.string.cancel, null)
                 .show()
