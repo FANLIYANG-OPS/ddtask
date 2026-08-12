@@ -13,6 +13,7 @@ import com.ddtask.scheduler.databinding.DialogAddTaskBinding
 import com.ddtask.scheduler.databinding.FragmentTasksBinding
 import com.ddtask.scheduler.model.RepeatMode
 import com.ddtask.scheduler.model.ScheduledTask
+import com.ddtask.scheduler.model.TaskTemplate
 import com.ddtask.scheduler.service.AlarmScheduler
 import com.ddtask.scheduler.ui.TaskAdapter
 import com.ddtask.scheduler.util.ScheduleCalculator
@@ -57,7 +58,35 @@ class TasksFragment : Fragment() {
     }
 
     fun showAddTaskDialog() {
-        showTaskDialog(null)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.choose_task_template)
+            .setItems(
+                arrayOf(
+                    getString(R.string.template_custom),
+                    getString(R.string.template_summer),
+                    getString(R.string.template_winter)
+                )
+            ) { _, which ->
+                when (which) {
+                    0 -> showTaskDialog(null)
+                    1 -> applyTemplate(TaskTemplate.SUMMER, R.string.template_summer)
+                    2 -> applyTemplate(TaskTemplate.WINTER, R.string.template_winter)
+                }
+            }
+            .show()
+    }
+
+    private fun applyTemplate(template: TaskTemplate, nameRes: Int) {
+        template.createTasks { taskStorage.nextId() }.forEach { task ->
+            taskStorage.add(task)
+            alarmScheduler.schedule(task)
+        }
+        refreshTaskList()
+        Toast.makeText(
+            requireContext(),
+            getString(R.string.template_applied, getString(nameRes)),
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private fun setupRecyclerView() {
