@@ -149,6 +149,13 @@ class TasksFragment : Fragment() {
             .create()
 
         dialog.setOnShowListener {
+            val maxHeight = (resources.displayMetrics.heightPixels * 0.75).toInt()
+            dialogBinding.root.post {
+                if (dialogBinding.root.height > maxHeight) {
+                    dialogBinding.root.layoutParams.height = maxHeight
+                    dialogBinding.root.requestLayout()
+                }
+            }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val label = dialogBinding.etLabel.text?.toString()?.trim().orEmpty()
                 val mode = when (dialogBinding.radioRepeatMode.checkedRadioButtonId) {
