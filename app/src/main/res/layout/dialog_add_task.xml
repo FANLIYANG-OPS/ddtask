@@ -6,16 +6,9 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/task_label_hint"
-        android:textAppearance="?attr/textAppearanceLabelMedium" />
-
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:hint="@string/task_label_hint">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -27,27 +20,96 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <LinearLayout
+        android:id="@+id/layout_time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_selected_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textAppearance="?attr/textAppearanceHeadlineMedium" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_pick_time"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/pick_time" />
+
+    </LinearLayout>
+
     <TextView
-        android:id="@+id/tv_selected_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:textAppearance="?attr/textAppearanceHeadlineMedium" />
+        android:text="@string/repeat_mode_label"
+        android:textAppearance="?attr/textAppearanceLabelMedium" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_pick_time"
-        style="@style/Widget.Material3.Button.OutlinedButton"
+    <RadioGroup
+        android:id="@+id/radio_repeat_mode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp">
+
+        <RadioButton
+            android:id="@+id/radio_once"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/repeat_once" />
+
+        <RadioButton
+            android:id="@+id/radio_daily"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/repeat_daily" />
+
+        <RadioButton
+            android:id="@+id/radio_weekdays"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/repeat_weekdays" />
+
+        <RadioButton
+            android:id="@+id/radio_cron"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/repeat_cron" />
+
+    </RadioGroup>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/layout_cron"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/pick_time" />
+        android:hint="@string/cron_hint"
+        android:visibility="gone">
 
-    <com.google.android.material.materialswitch.MaterialSwitch
-        android:id="@+id/switch_repeat_daily"
-        android:layout_width="match_parent"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_cron"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:inputType="text"
+            android:maxLines="2" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/tv_cron_help"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:checked="true"
-        android:text="@string/repeat_daily" />
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/cron_help"
+        android:textAppearance="?attr/textAppearanceBodySmall"
+        android:textColor="?android:attr/textColorSecondary"
+        android:visibility="gone" />
 
 </LinearLayout>

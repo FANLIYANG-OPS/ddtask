@@ -38,9 +38,9 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         context.startActivity(launchIntent)
 
-        GoHomeScheduler(context).schedule(taskId)
+        GoHomeScheduler(context).scheduleHideSequence(taskId)
 
-        if (task.repeatDaily) {
+        if (task.shouldRescheduleAfterRun()) {
             AlarmScheduler(context).schedule(task)
         } else {
             taskStorage.update(task.copy(enabled = false))

@@ -11,48 +11,65 @@ class GoHomeScheduler(private val context: Context) {
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    fun schedule(taskId: Long) {
-        val triggerAt = System.currentTimeMillis() + HIDE_DELAY_MS
-        val pendingIntent = createPendingIntent(taskId)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerAt,
-                pendingIntent
-            )
-        } else {
-            alarmManager.setExact(
-                AlarmManager.RTC_WAKEUP,
-                triggerAt,
-                pendingIntent
-            )
-        }
+    /**
+     * 隐藏流程：1分钟后回桌面 → 3秒后重新打开钉钉 → 2秒后再次回桌面。
+     * 重新打开钉钉可保持进程活跃，确保下次定时任务能正常执行。
+     */
+    fun scheduleHideSequence(taskId: Long) {
+        scheduleAt(taskId, GoHomeReceiver.ACTION_GO_HOME, HIDE_DELAY_MS, requestCodeHide(taskId))
+        scheduleAt(
+            taskId,
+            GoHomeReceiver.ACTION_RELAUNCH_DINGTALK,
+            HIDE_DELAY_MS + RELAUNCH_DELAY_MS,
+            requestCodeRelaunch(taskId)
+        )
+        scheduleAt(
+            taskId,
+            GoHomeReceiver.ACTION_GO_HOME,
+            HIDE_DELAY_MS + RELAUNCH_DELAY_MS + HIDE_AGAIN_DELAY_MS,
+            requestCodeHideAgain(taskId)
+        )
     }
 
     fun cancel(taskId: Long) {
-        alarmManager.cancel(createPendingIntent(taskId))
+        alarmManager.cancel(createPendingIntent(taskId, GoHomeReceiver.ACTION_GO_HOME, requestCodeHide(taskId)))
+        alarmManager.cancel(
+            createPendingIntent(taskId, GoHomeReceiver.ACTION_RELAUNCH_DINGTALK, requestCodeRelaunch(taskId))
+        )
+        alarmManager.cancel(createPendingIntent(taskId, GoHomeReceiver.ACTION_GO_HOME, requestCodeHideAgain(taskId)))
     }
 
-    private fun createPendingIntent(taskId: Long): PendingIntent {
+    private fun scheduleAt(taskId: Long, action: String, delayMs: Long, requestCode: Int) {
+        val triggerAt = System.currentTimeMillis() + delayMs
+        val pendingIntent = createPendingIntent(taskId, action, requestCode)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+        }
+    }
+
+    private fun createPendingIntent(taskId: Long, action: String, requestCode: Int): PendingIntent {
         val intent = Intent(context, GoHomeReceiver::class.java).apply {
-            action = GoHomeReceiver.ACTION_GO_HOME
+            this.action = action
             putExtra(GoHomeReceiver.EXTRA_TASK_ID, taskId)
         }
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-        return PendingIntent.getBroadcast(
-            context,
-            requestCode(taskId),
-            intent,
-            flags
-        )
+        return PendingIntent.getBroadcast(context, requestCode, intent, flags)
     }
 
     companion object {
         private const val HIDE_DELAY_MS = 60_000L
-        private const val REQUEST_CODE_BASE = 500_000
+        private const val RELAUNCH_DELAY_MS = 3_000L
+        private const val HIDE_AGAIN_DELAY_MS = 2_000L
 
-        fun requestCode(taskId: Long): Int = REQUEST_CODE_BASE + taskId.toInt()
+        private const val REQUEST_HIDE_BASE = 500_000
+        private const val REQUEST_RELAUNCH_BASE = 510_000
+        private const val REQUEST_HIDE_AGAIN_BASE = 520_000
+
+        fun requestCodeHide(taskId: Long): Int = REQUEST_HIDE_BASE + taskId.toInt()
+        fun requestCodeRelaunch(taskId: Long): Int = REQUEST_RELAUNCH_BASE + taskId.toInt()
+        fun requestCodeHideAgain(taskId: Long): Int = REQUEST_HIDE_AGAIN_BASE + taskId.toInt()
     }
 }

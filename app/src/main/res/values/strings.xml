@@ -2,6 +2,8 @@
 <resources>
     <string name="app_name">钉钉定时</string>
     <string name="app_description">设置定时任务，到点自动打开钉钉</string>
+    <string name="nav_tasks">任务</string>
+    <string name="nav_settings">设置</string>
     <string name="dingtalk_installed">钉钉：已安装 ✓</string>
     <string name="dingtalk_not_installed">钉钉：未安装，请先安装钉钉</string>
     <string name="add_task">添加定时任务</string>
@@ -13,8 +15,18 @@
     <string name="delete_task">删除任务</string>
     <string name="delete_task_confirm">确定删除 %1$s 的定时任务吗？</string>
     <string name="empty_tasks">暂无定时任务\n点击右下角 + 添加</string>
+    <string name="tap_task_to_edit">点击任务可编辑</string>
+    <string name="version_label">版本 %1$s</string>
     <string name="open_dingtalk">打开钉钉</string>
-    <string name="repeat_daily">每天重复</string>
+    <string name="repeat_daily">每日重复</string>
+    <string name="repeat_once">运行一次</string>
+    <string name="repeat_weekdays">工作日（中国节假日）</string>
+    <string name="repeat_cron">自定义（Cron）</string>
+    <string name="repeat_cron_with_expr">Cron: %1$s</string>
+    <string name="repeat_mode_label">重复方式</string>
+    <string name="cron_hint">Cron 表达式</string>
+    <string name="cron_help">格式：分 时 日 月 周。工作日模式已内置 2026 年国务院节假日与调休安排</string>
+    <string name="cron_invalid">Cron 表达式无效，请检查格式</string>
     <string name="once">仅一次</string>
     <string name="task_label_hint">备注（可选）</string>
     <string name="task_saved">定时任务已保存</string>

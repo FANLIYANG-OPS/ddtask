@@ -29,21 +29,9 @@ class LaunchProxyActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
         )
 
-        launchDingTalk()
-        finish()
-    }
-
-    private fun launchDingTalk() {
-        if (!DingTalkLauncher.isInstalled(this)) {
+        if (!DingTalkLauncher.launch(this)) {
             Toast.makeText(this, R.string.dingtalk_not_installed_toast, Toast.LENGTH_LONG).show()
-            return
         }
-        val launchIntent = packageManager.getLaunchIntentForPackage(DingTalkLauncher.PACKAGE_NAME)
-        if (launchIntent != null) {
-            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(launchIntent)
-        } else {
-            Toast.makeText(this, R.string.dingtalk_launch_failed, Toast.LENGTH_SHORT).show()
-        }
+        finish()
     }
 }
