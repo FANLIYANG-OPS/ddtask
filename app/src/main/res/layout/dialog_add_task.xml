@@ -49,45 +49,22 @@
 
         </LinearLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/repeat_mode_label"
-            android:textAppearance="?attr/textAppearanceLabelMedium" />
-
-        <RadioGroup
-            android:id="@+id/radio_repeat_mode"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_repeat_mode"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp">
+            android:layout_marginTop="12dp"
+            android:hint="@string/repeat_mode_label">
 
-            <RadioButton
-                android:id="@+id/radio_once"
+            <AutoCompleteTextView
+                android:id="@+id/dropdown_repeat_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/repeat_once" />
+                android:inputType="none"
+                android:importantForAutofill="no" />
 
-            <RadioButton
-                android:id="@+id/radio_daily"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="@string/repeat_daily" />
-
-            <RadioButton
-                android:id="@+id/radio_weekdays"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/repeat_weekdays" />
-
-            <RadioButton
-                android:id="@+id/radio_cron"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/repeat_cron" />
-
-        </RadioGroup>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layout_cron"

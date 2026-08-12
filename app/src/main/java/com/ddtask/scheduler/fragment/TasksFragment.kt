@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -132,21 +133,35 @@ class TasksFragment : Fragment() {
         var selectedMinute = existingTask?.minute ?: 0
         val isEdit = existingTask != null
 
+        val repeatModeOptions = listOf(
+            RepeatMode.ONCE to getString(R.string.repeat_once),
+            RepeatMode.DAILY to getString(R.string.repeat_daily),
+            RepeatMode.WEEKDAYS to getString(R.string.repeat_weekdays),
+            RepeatMode.CRON to getString(R.string.repeat_cron)
+        )
+        var selectedMode = existingTask?.effectiveMode() ?: RepeatMode.DAILY
+
+        dialogBinding.dropdownRepeatMode.setAdapter(
+            ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_dropdown_item_1line,
+                repeatModeOptions.map { it.second }
+            )
+        )
+        dialogBinding.dropdownRepeatMode.setText(
+            repeatModeOptions.first { it.first == selectedMode }.second,
+            false
+        )
+
         if (isEdit) {
             dialogBinding.etLabel.setText(existingTask!!.label)
-            when (existingTask.effectiveMode()) {
-                RepeatMode.ONCE -> dialogBinding.radioOnce.isChecked = true
-                RepeatMode.DAILY -> dialogBinding.radioDaily.isChecked = true
-                RepeatMode.WEEKDAYS -> dialogBinding.radioWeekdays.isChecked = true
-                RepeatMode.CRON -> {
-                    dialogBinding.radioCron.isChecked = true
-                    dialogBinding.etCron.setText(existingTask.cronExpression)
-                }
+            if (existingTask.effectiveMode() == RepeatMode.CRON) {
+                dialogBinding.etCron.setText(existingTask.cronExpression)
             }
         }
 
         fun updateRepeatUi() {
-            val isCron = dialogBinding.radioCron.isChecked
+            val isCron = selectedMode == RepeatMode.CRON
             dialogBinding.layoutTime.visibility = if (isCron) View.GONE else View.VISIBLE
             dialogBinding.layoutCron.visibility = if (isCron) View.VISIBLE else View.GONE
             dialogBinding.tvCronHelp.visibility = if (isCron) View.VISIBLE else View.GONE
@@ -157,7 +172,10 @@ class TasksFragment : Fragment() {
             }
         }
 
-        dialogBinding.radioRepeatMode.setOnCheckedChangeListener { _, _ -> updateRepeatUi() }
+        dialogBinding.dropdownRepeatMode.setOnItemClickListener { _, _, position, _ ->
+            selectedMode = repeatModeOptions[position].first
+            updateRepeatUi()
+        }
 
         dialogBinding.tvSelectedTime.text = String.format("%02d:%02d", selectedHour, selectedMinute)
         dialogBinding.btnPickTime.setOnClickListener {
@@ -187,12 +205,7 @@ class TasksFragment : Fragment() {
             }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val label = dialogBinding.etLabel.text?.toString()?.trim().orEmpty()
-                val mode = when (dialogBinding.radioRepeatMode.checkedRadioButtonId) {
-                    R.id.radio_once -> RepeatMode.ONCE
-                    R.id.radio_weekdays -> RepeatMode.WEEKDAYS
-                    R.id.radio_cron -> RepeatMode.CRON
-                    else -> RepeatMode.DAILY
-                }
+                val mode = selectedMode
                 val cronExpression = if (mode == RepeatMode.CRON) {
                     dialogBinding.etCron.text?.toString()?.trim().orEmpty()
                 } else {
