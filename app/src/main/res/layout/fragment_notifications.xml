@@ -51,6 +51,60 @@
                     android:layout_marginVertical="12dp"
                     android:background="?android:attr/listDivider" />
 
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switch_auto_open_dingtalk"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/auto_open_dingtalk_enabled" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/auto_open_dingtalk_enabled_desc"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?android:attr/textColorSecondary" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="@string/trigger_keywords_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_trigger_keywords"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:inputType="textMultiLine"
+                        android:minLines="2" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/trigger_keywords_help"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?android:attr/textColorSecondary" />
+
+                <TextView
+                    android:id="@+id/tv_last_open"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:visibility="gone" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="12dp"
+                    android:background="?android:attr/listDivider" />
+
                 <TextView
                     android:id="@+id/status_email_config"
                     android:layout_width="wrap_content"
@@ -71,6 +125,38 @@
                     android:text="@string/email_notify_enabled_desc"
                     android:textAppearance="?attr/textAppearanceBodySmall"
                     android:textColor="?android:attr/textColorSecondary" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="@string/success_keywords_hint">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_success_keywords"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="top"
+                        android:inputType="textMultiLine"
+                        android:minLines="2" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/success_keywords_help"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?android:attr/textColorSecondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_save_notification_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/save" />
 
                 <TextView
                     android:id="@+id/tv_last_sent"

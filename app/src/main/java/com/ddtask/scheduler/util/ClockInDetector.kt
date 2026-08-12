@@ -2,17 +2,47 @@ package com.ddtask.scheduler.util
 
 object ClockInDetector {
 
-    private val SUCCESS_KEYWORDS = listOf(
+    const val DINGTALK_PACKAGE = "com.alibaba.android.rimet"
+
+    val DEFAULT_TRIGGER_KEYWORDS = listOf(
+        "上班打卡",
+        "下班打卡"
+    )
+
+    val DEFAULT_SUCCESS_KEYWORDS = listOf(
         "极速打卡成功",
         "打卡成功",
         "上班打卡成功",
         "下班打卡成功"
     )
 
-    const val DINGTALK_PACKAGE = "com.alibaba.android.rimet"
+    fun defaultTriggerKeywordsText(): String = DEFAULT_TRIGGER_KEYWORDS.joinToString("\n")
 
-    fun isClockInSuccess(text: String): Boolean {
-        if (text.isBlank()) return false
-        return SUCCESS_KEYWORDS.any { keyword -> text.contains(keyword) }
+    fun defaultSuccessKeywordsText(): String = DEFAULT_SUCCESS_KEYWORDS.joinToString("\n")
+
+    fun parseKeywords(raw: String, fallback: List<String> = emptyList()): List<String> {
+        val parsed = raw.split('\n', ',', '，', ';', '；')
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+        return parsed.ifEmpty { fallback }
+    }
+
+    fun matchesAny(text: String, keywords: List<String>): Boolean {
+        if (text.isBlank() || keywords.isEmpty()) return false
+        return keywords.any { keyword -> text.contains(keyword) }
+    }
+
+    fun matchesTrigger(text: String, rawKeywords: String): Boolean {
+        return matchesAny(
+            text,
+            parseKeywords(rawKeywords, DEFAULT_TRIGGER_KEYWORDS)
+        )
+    }
+
+    fun matchesSuccess(text: String, rawKeywords: String): Boolean {
+        return matchesAny(
+            text,
+            parseKeywords(rawKeywords, DEFAULT_SUCCESS_KEYWORDS)
+        )
     }
 }

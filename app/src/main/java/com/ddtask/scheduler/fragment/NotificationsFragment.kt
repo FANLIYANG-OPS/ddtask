@@ -40,8 +40,16 @@ class NotificationsFragment : Fragment() {
         binding.btnGrantListener.setOnClickListener {
             NotificationAccess.openSettings(requireContext())
         }
+        binding.btnSaveNotificationSettings.setOnClickListener { saveNotificationSettings() }
+        binding.switchAutoOpenDingtalk.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && !ensureListenerEnabled()) {
+                binding.switchAutoOpenDingtalk.isChecked = false
+                return@setOnCheckedChangeListener
+            }
+            notificationStorage.autoOpenDingTalkEnabled = isChecked
+        }
         binding.switchEmailNotify.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked && !ensureReadyForEnable()) {
+            if (isChecked && !ensureEmailReady()) {
                 binding.switchEmailNotify.isChecked = false
                 return@setOnCheckedChangeListener
             }
@@ -53,6 +61,7 @@ class NotificationsFragment : Fragment() {
         super.onResume()
         updateListenerStatus()
         updateEmailConfigStatus()
+        updateLastOpenStatus()
         updateLastSentStatus()
     }
 
@@ -62,27 +71,50 @@ class NotificationsFragment : Fragment() {
     }
 
     private fun loadSettings() {
+        binding.switchAutoOpenDingtalk.setOnCheckedChangeListener(null)
+        binding.switchAutoOpenDingtalk.isChecked = notificationStorage.autoOpenDingTalkEnabled
+        binding.switchAutoOpenDingtalk.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && !ensureListenerEnabled()) {
+                binding.switchAutoOpenDingtalk.isChecked = false
+                return@setOnCheckedChangeListener
+            }
+            notificationStorage.autoOpenDingTalkEnabled = isChecked
+        }
+
         binding.switchEmailNotify.setOnCheckedChangeListener(null)
         binding.switchEmailNotify.isChecked = notificationStorage.emailNotifyEnabled
         binding.switchEmailNotify.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked && !ensureReadyForEnable()) {
+            if (isChecked && !ensureEmailReady()) {
                 binding.switchEmailNotify.isChecked = false
                 return@setOnCheckedChangeListener
             }
             notificationStorage.emailNotifyEnabled = isChecked
         }
+
+        binding.etTriggerKeywords.setText(notificationStorage.triggerKeywords)
+        binding.etSuccessKeywords.setText(notificationStorage.successKeywords)
     }
 
-    private fun ensureReadyForEnable(): Boolean {
-        if (!notificationStorage.isConfigured()) {
-            showEmailConfigRequiredDialog()
-            return false
-        }
+    private fun saveNotificationSettings() {
+        notificationStorage.triggerKeywords = binding.etTriggerKeywords.text?.toString()?.trim().orEmpty()
+        notificationStorage.successKeywords = binding.etSuccessKeywords.text?.toString()?.trim().orEmpty()
+        Toast.makeText(requireContext(), R.string.notification_settings_saved, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun ensureListenerEnabled(): Boolean {
         if (!NotificationAccess.isEnabled(requireContext())) {
             showListenerRequiredDialog()
             return false
         }
         return true
+    }
+
+    private fun ensureEmailReady(): Boolean {
+        if (!notificationStorage.isConfigured()) {
+            showEmailConfigRequiredDialog()
+            return false
+        }
+        return ensureListenerEnabled()
     }
 
     private fun showEmailConfigRequiredDialog() {
@@ -138,6 +170,21 @@ class NotificationsFragment : Fragment() {
                 requireContext(),
                 if (configured) R.color.status_ok else R.color.status_error
             )
+        )
+    }
+
+    private fun updateLastOpenStatus() {
+        val lastOpenAt = notificationStorage.lastOpenDingTalkAt
+        if (lastOpenAt <= 0L) {
+            binding.tvLastOpen.visibility = View.GONE
+            return
+        }
+        val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(lastOpenAt))
+        binding.tvLastOpen.visibility = View.VISIBLE
+        binding.tvLastOpen.text = getString(
+            R.string.last_open_dingtalk,
+            time,
+            notificationStorage.lastOpenDingTalkSummary
         )
     }
 

@@ -1,5 +1,8 @@
 package com.ddtask.scheduler.fragment
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -14,8 +17,10 @@ import androidx.fragment.app.Fragment
 import com.ddtask.scheduler.BuildConfig
 import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
+import com.ddtask.scheduler.databinding.DialogConfigIoBinding
 import com.ddtask.scheduler.databinding.FragmentSettingsBinding
 import com.ddtask.scheduler.util.BrightnessController
+import com.ddtask.scheduler.util.ConfigManager
 import com.ddtask.scheduler.util.DingTalkLauncher
 import com.ddtask.scheduler.util.EmailConfigHelper
 import com.ddtask.scheduler.util.EmailSender
@@ -61,6 +66,8 @@ class SettingsFragment : Fragment() {
         binding.btnRecheckPermissions.setOnClickListener {
             (activity as? MainActivity)?.openPermissionSetup()
         }
+        binding.btnExportConfig.setOnClickListener { showExportDialog() }
+        binding.btnImportConfig.setOnClickListener { showImportConfirmDialog() }
     }
 
     override fun onResume() {
@@ -251,5 +258,65 @@ class SettingsFragment : Fragment() {
                 if (installed) R.color.status_ok else R.color.status_error
             )
         )
+    }
+
+    private fun showExportDialog() {
+        val dialogBinding = DialogConfigIoBinding.inflate(layoutInflater)
+        dialogBinding.etConfigJson.setText(ConfigManager(requireContext()).exportJson())
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.export_config)
+            .setView(dialogBinding.root)
+            .setPositiveButton(R.string.copy_config) { _, _ ->
+                copyToClipboard(dialogBinding.etConfigJson.text?.toString().orEmpty())
+            }
+            .setNegativeButton(R.string.close, null)
+            .show()
+    }
+
+    private fun showImportConfirmDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.import_config)
+            .setMessage(R.string.import_config_warning)
+            .setPositiveButton(R.string.continue_text) { _, _ -> showImportInputDialog() }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showImportInputDialog() {
+        val dialogBinding = DialogConfigIoBinding.inflate(layoutInflater)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.import_config)
+            .setView(dialogBinding.root)
+            .setPositiveButton(R.string.import_config) { _, _ ->
+                importConfig(dialogBinding.etConfigJson.text?.toString().orEmpty())
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun importConfig(json: String) {
+        try {
+            ConfigManager(requireContext()).importJson(json)
+            emailEditing = false
+            syncSettingsUi()
+            loadEmailForm()
+            updateEmailUi()
+            Toast.makeText(requireContext(), R.string.config_import_success, Toast.LENGTH_SHORT).show()
+        } catch (e: IllegalArgumentException) {
+            val message = when (e.message) {
+                "empty_json" -> getString(R.string.config_import_empty)
+                "invalid_json" -> getString(R.string.config_import_invalid)
+                "unsupported_version" -> getString(R.string.config_import_unsupported)
+                else -> getString(R.string.config_import_failed, e.message.orEmpty())
+            }
+            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun copyToClipboard(text: String) {
+        if (text.isBlank()) return
+        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("ddtask_config", text))
+        Toast.makeText(requireContext(), R.string.config_copied, Toast.LENGTH_SHORT).show()
     }
 }
