@@ -34,9 +34,12 @@ class MainActivity : AppCompatActivity() {
         binding.viewPager.isUserInputEnabled = false
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                binding.bottomNav.menu.findItem(
-                    if (position == 0) R.id.nav_tasks else R.id.nav_settings
-                )?.isChecked = true
+                val menuItemId = when (position) {
+                    0 -> R.id.nav_tasks
+                    1 -> R.id.nav_notifications
+                    else -> R.id.nav_settings
+                }
+                binding.bottomNav.menu.findItem(menuItemId)?.isChecked = true
                 binding.fabAdd.visibility = if (position == 0) View.VISIBLE else View.GONE
             }
         })
@@ -46,7 +49,8 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_tasks -> binding.viewPager.setCurrentItem(0, false)
-                R.id.nav_settings -> binding.viewPager.setCurrentItem(1, false)
+                R.id.nav_notifications -> binding.viewPager.setCurrentItem(1, false)
+                R.id.nav_settings -> binding.viewPager.setCurrentItem(2, false)
             }
             true
         }
