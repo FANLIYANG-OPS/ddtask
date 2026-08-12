@@ -30,7 +30,8 @@ class ConfigManager(private val context: Context) {
             smtpPort = notificationStorage.smtpPort,
             autoOpenDingTalkEnabled = notificationStorage.autoOpenDingTalkEnabled,
             triggerKeywords = notificationStorage.triggerKeywords,
-            successKeywords = notificationStorage.successKeywords
+            successKeywords = notificationStorage.successKeywords,
+            keywordsConfigured = notificationStorage.keywordsConfigured
         )
         return gson.toJson(config)
     }
@@ -74,6 +75,9 @@ class ConfigManager(private val context: Context) {
         notificationStorage.successKeywords = config.successKeywords.ifBlank {
             ClockInDetector.defaultSuccessKeywordsText()
         }
+        notificationStorage.keywordsConfigured = config.keywordsConfigured ||
+            config.triggerKeywords.isNotBlank() ||
+            config.successKeywords.isNotBlank()
 
         alarmScheduler.rescheduleAll()
     }

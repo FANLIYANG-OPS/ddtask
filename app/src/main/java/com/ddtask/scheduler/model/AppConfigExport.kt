@@ -14,7 +14,8 @@ data class AppConfigExport(
     val smtpPort: Int = 465,
     val autoOpenDingTalkEnabled: Boolean = false,
     val triggerKeywords: String = "",
-    val successKeywords: String = ""
+    val successKeywords: String = "",
+    val keywordsConfigured: Boolean = false
 ) {
     companion object {
         const val CURRENT_VERSION = 1

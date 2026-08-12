@@ -50,6 +50,10 @@ class NotificationStorage(context: Context) {
         get() = prefs.getString(KEY_SUCCESS_KEYWORDS, ClockInDetector.defaultSuccessKeywordsText()).orEmpty()
         set(value) = prefs.edit().putString(KEY_SUCCESS_KEYWORDS, value).apply()
 
+    var keywordsConfigured: Boolean
+        get() = prefs.getBoolean(KEY_KEYWORDS_CONFIGURED, false)
+        set(value) = prefs.edit().putBoolean(KEY_KEYWORDS_CONFIGURED, value).apply()
+
     var lastOpenDingTalkAt: Long
         get() = prefs.getLong(KEY_LAST_OPEN_AT, 0L)
         set(value) = prefs.edit().putLong(KEY_LAST_OPEN_AT, value).apply()
@@ -100,6 +104,7 @@ class NotificationStorage(context: Context) {
         private const val KEY_AUTO_OPEN_DINGTALK = "auto_open_dingtalk"
         private const val KEY_TRIGGER_KEYWORDS = "trigger_keywords"
         private const val KEY_SUCCESS_KEYWORDS = "success_keywords"
+        private const val KEY_KEYWORDS_CONFIGURED = "keywords_configured"
         private const val KEY_LAST_OPEN_AT = "last_open_at"
         private const val KEY_LAST_OPEN_SUMMARY = "last_open_summary"
         private const val DEFAULT_SMTP_HOST = "smtp.qq.com"
