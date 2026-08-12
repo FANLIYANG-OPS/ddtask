@@ -16,6 +16,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        const val TAB_TASKS = 0
+        const val TAB_NOTIFICATIONS = 1
+        const val TAB_SETTINGS = 2
+    }
+
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +67,10 @@ class MainActivity : AppCompatActivity() {
             (supportFragmentManager.findFragmentByTag("f0") as? TasksFragment)
                 ?.showAddTaskDialog()
         }
+    }
+
+    fun openTab(index: Int) {
+        binding.viewPager.setCurrentItem(index, false)
     }
 
     private fun requestExactAlarmPermissionIfNeeded() {

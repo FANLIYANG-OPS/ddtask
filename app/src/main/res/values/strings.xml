@@ -84,4 +84,11 @@
     <string name="email_clock_in_body">检测到钉钉打卡成功。\n\n时间：%1$s\n通知内容：%2$s\n\n—— 钉钉定时</string>
     <string name="email_test_subject">钉钉定时 - 测试邮件</string>
     <string name="email_test_body">这是一封测试邮件，说明邮件通知配置正确。\n\n发送时间：%1$s\n\n—— 钉钉定时</string>
+    <string name="email_config_title">邮件配置</string>
+    <string name="email_config_summary">发件：%1$s\n收件：%2$s\nSMTP：%3$s:%4$d</string>
+    <string name="edit_email_config">修改配置</string>
+    <string name="email_config_status_ok">邮件：%1$s → %2$s</string>
+    <string name="email_config_status_missing">邮件：未配置，请前往「设置」页配置</string>
+    <string name="email_config_required_title">需要先配置邮件</string>
+    <string name="email_config_required_message">请先在「设置」页完成收发件邮箱与 SMTP 配置，再开启打卡邮件通知。</string>
 </resources>
