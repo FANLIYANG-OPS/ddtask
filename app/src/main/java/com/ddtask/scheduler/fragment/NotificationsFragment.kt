@@ -4,13 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
 import com.ddtask.scheduler.databinding.FragmentNotificationsBinding
-import com.ddtask.scheduler.util.ClockInDetector
 import com.ddtask.scheduler.util.NotificationAccess
 import com.ddtask.scheduler.util.NotificationStorage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -24,7 +21,6 @@ class NotificationsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var notificationStorage: NotificationStorage
-    private var keywordsEditing = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,16 +34,7 @@ class NotificationsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         notificationStorage = NotificationStorage(requireContext())
-        loadSettings()
-        binding.btnGrantListener.setOnClickListener {
-            NotificationAccess.openSettings(requireContext())
-        }
-        binding.btnSaveNotificationSettings.setOnClickListener { saveNotificationSettings() }
-        binding.btnEditKeywords.setOnClickListener {
-            keywordsEditing = true
-            loadKeywordForm()
-            updateKeywordsUi()
-        }
+        loadSwitches()
         binding.switchAutoOpenDingtalk.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked && !ensureListenerEnabled()) {
                 binding.switchAutoOpenDingtalk.isChecked = false
@@ -66,14 +53,9 @@ class NotificationsFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        updateListenerStatus()
-        updateEmailConfigStatus()
+        loadSwitches()
         updateLastOpenStatus()
         updateLastSentStatus()
-        if (!keywordsEditing) {
-            loadKeywordForm()
-        }
-        updateKeywordsUi()
     }
 
     override fun onDestroyView() {
@@ -81,7 +63,7 @@ class NotificationsFragment : Fragment() {
         _binding = null
     }
 
-    private fun loadSettings() {
+    private fun loadSwitches() {
         binding.switchAutoOpenDingtalk.setOnCheckedChangeListener(null)
         binding.switchAutoOpenDingtalk.isChecked = notificationStorage.autoOpenDingTalkEnabled
         binding.switchAutoOpenDingtalk.setOnCheckedChangeListener { _, isChecked ->
@@ -103,45 +85,13 @@ class NotificationsFragment : Fragment() {
         }
     }
 
-    private fun loadKeywordForm() {
-        binding.etTriggerKeywords.setText(notificationStorage.triggerKeywords)
-        binding.etSuccessKeywords.setText(notificationStorage.successKeywords)
-    }
-
-    private fun saveNotificationSettings() {
-        notificationStorage.triggerKeywords = binding.etTriggerKeywords.text?.toString()?.trim().orEmpty()
-        notificationStorage.successKeywords = binding.etSuccessKeywords.text?.toString()?.trim().orEmpty()
-        notificationStorage.keywordsConfigured = true
-        keywordsEditing = false
-        updateKeywordsUi()
-        Toast.makeText(requireContext(), R.string.notification_settings_saved, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun updateKeywordsUi() {
-        val configured = notificationStorage.keywordsConfigured
-        val showForm = !configured || keywordsEditing
-        binding.layoutKeywordsForm.visibility = if (showForm) View.VISIBLE else View.GONE
-        binding.layoutKeywordsSummary.visibility = if (configured && !keywordsEditing) View.VISIBLE else View.GONE
-        if (configured && !keywordsEditing) {
-            binding.tvKeywordsSummary.text = buildKeywordsSummary()
-        }
-    }
-
-    private fun buildKeywordsSummary(): String {
-        val trigger = ClockInDetector.parseKeywords(
-            notificationStorage.triggerKeywords,
-            ClockInDetector.DEFAULT_TRIGGER_KEYWORDS
-        ).joinToString("、")
-        val success = ClockInDetector.parseKeywords(
-            notificationStorage.successKeywords,
-            ClockInDetector.DEFAULT_SUCCESS_KEYWORDS
-        ).joinToString("、")
-        return getString(R.string.keywords_config_summary, trigger, success)
-    }
-
     private fun ensureListenerEnabled(): Boolean {
         if (!NotificationAccess.isEnabled(requireContext())) {
-            showListenerRequiredDialog()
+            showGoSettingsDialog(
+                R.string.notification_access_required_title,
+                R.string.notification_access_required_message,
+                SettingsHostFragment.SECTION_NOTIFICATION
+            )
             return false
         }
         return true
@@ -149,66 +99,25 @@ class NotificationsFragment : Fragment() {
 
     private fun ensureEmailReady(): Boolean {
         if (!notificationStorage.isConfigured()) {
-            showEmailConfigRequiredDialog()
+            showGoSettingsDialog(
+                R.string.email_config_required_title,
+                R.string.email_config_required_message,
+                SettingsHostFragment.SECTION_EMAIL
+            )
             return false
         }
         return ensureListenerEnabled()
     }
 
-    private fun showEmailConfigRequiredDialog() {
+    private fun showGoSettingsDialog(titleRes: Int, messageRes: Int, section: String) {
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.email_config_required_title)
-            .setMessage(R.string.email_config_required_message)
+            .setTitle(titleRes)
+            .setMessage(messageRes)
             .setPositiveButton(R.string.go_settings) { _, _ ->
-                (activity as? MainActivity)?.openTab(MainActivity.TAB_SETTINGS)
+                (activity as? MainActivity)?.openSettingsSection(section)
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
-    }
-
-    private fun showListenerRequiredDialog() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(R.string.notification_access_required_title)
-            .setMessage(R.string.notification_access_required_message)
-            .setPositiveButton(R.string.grant_notification_access) { _, _ ->
-                NotificationAccess.openSettings(requireContext())
-            }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
-    }
-
-    private fun updateListenerStatus() {
-        val enabled = NotificationAccess.isEnabled(requireContext())
-        binding.statusListener.text = if (enabled) {
-            getString(R.string.notification_listener_enabled)
-        } else {
-            getString(R.string.notification_listener_disabled)
-        }
-        binding.statusListener.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                if (enabled) R.color.status_ok else R.color.status_error
-            )
-        )
-    }
-
-    private fun updateEmailConfigStatus() {
-        val configured = notificationStorage.isConfigured()
-        binding.statusEmailConfig.text = if (configured) {
-            getString(
-                R.string.email_config_status_ok,
-                notificationStorage.senderEmail,
-                notificationStorage.recipientEmail
-            )
-        } else {
-            getString(R.string.email_config_status_missing)
-        }
-        binding.statusEmailConfig.setTextColor(
-            ContextCompat.getColor(
-                requireContext(),
-                if (configured) R.color.status_ok else R.color.status_error
-            )
-        )
     }
 
     private fun updateLastOpenStatus() {

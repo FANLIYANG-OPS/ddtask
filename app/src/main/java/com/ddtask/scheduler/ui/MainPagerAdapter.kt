@@ -4,7 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.ddtask.scheduler.fragment.NotificationsFragment
-import com.ddtask.scheduler.fragment.SettingsFragment
+import com.ddtask.scheduler.fragment.SettingsHostFragment
 import com.ddtask.scheduler.fragment.TasksFragment
 
 class MainPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
@@ -15,7 +15,7 @@ class MainPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activi
         return when (position) {
             0 -> TasksFragment()
             1 -> NotificationsFragment()
-            else -> SettingsFragment()
+            else -> SettingsHostFragment()
         }
     }
 }
