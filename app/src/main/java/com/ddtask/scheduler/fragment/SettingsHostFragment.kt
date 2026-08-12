@@ -16,7 +16,6 @@ class SettingsHostFragment : Fragment() {
     private var _binding: FragmentSettingsHostBinding? = null
     private val binding get() = _binding!!
 
-    private var sidebarExpanded = true
     private var currentSection = SECTION_NOTIFICATION
 
     private var notificationFragment: NotificationSettingsFragment? = null
@@ -35,19 +34,16 @@ class SettingsHostFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (savedInstanceState != null) {
-            sidebarExpanded = savedInstanceState.getBoolean(KEY_SIDEBAR_EXPANDED, true)
             currentSection = savedInstanceState.getString(KEY_SECTION, SECTION_NOTIFICATION)
                 ?: SECTION_NOTIFICATION
         }
         setupSidebar()
         ensureChildFragments()
         showSection(currentSection)
-        updateSidebarUi()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean(KEY_SIDEBAR_EXPANDED, sidebarExpanded)
         outState.putString(KEY_SECTION, currentSection)
     }
 
@@ -58,8 +54,6 @@ class SettingsHostFragment : Fragment() {
 
     fun showSection(section: String) {
         currentSection = section
-        sidebarExpanded = true
-        updateSidebarUi()
         ensureChildFragments()
         val transaction = childFragmentManager.beginTransaction()
         notificationFragment?.let { transaction.hide(it) }
@@ -75,10 +69,6 @@ class SettingsHostFragment : Fragment() {
     }
 
     private fun setupSidebar() {
-        binding.btnToggleSidebar.setOnClickListener {
-            sidebarExpanded = !sidebarExpanded
-            updateSidebarUi()
-        }
         binding.navNotificationSettings.setOnClickListener {
             showSection(SECTION_NOTIFICATION)
         }
@@ -105,26 +95,6 @@ class SettingsHostFragment : Fragment() {
         }
     }
 
-    private fun updateSidebarUi() {
-        val sidebarWidth = if (sidebarExpanded) {
-            resources.getDimensionPixelSize(R.dimen.settings_sidebar_expanded)
-        } else {
-            resources.getDimensionPixelSize(R.dimen.settings_sidebar_collapsed)
-        }
-        binding.settingsSidebar.layoutParams = binding.settingsSidebar.layoutParams.apply {
-            width = sidebarWidth
-        }
-
-        binding.btnToggleSidebar.text = getString(
-            if (sidebarExpanded) R.string.settings_sidebar_collapse else R.string.settings_sidebar_expand
-        )
-
-        val navVisibility = if (sidebarExpanded) View.VISIBLE else View.GONE
-        binding.navNotificationSettings.visibility = navVisibility
-        binding.navEmailSettings.visibility = navVisibility
-        binding.navBackupSettings.visibility = navVisibility
-    }
-
     private fun highlightNavItem(section: String) {
         styleNavItem(binding.navNotificationSettings, section == SECTION_NOTIFICATION)
         styleNavItem(binding.navEmailSettings, section == SECTION_EMAIL)
@@ -147,7 +117,6 @@ class SettingsHostFragment : Fragment() {
         const val SECTION_EMAIL = "email"
         const val SECTION_BACKUP = "backup"
 
-        private const val KEY_SIDEBAR_EXPANDED = "sidebar_expanded"
         private const val KEY_SECTION = "settings_section"
         private const val TAG_NOTIFICATION = "settings_notification"
         private const val TAG_EMAIL = "settings_email"

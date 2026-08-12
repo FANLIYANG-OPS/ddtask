@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="settings_sidebar_expanded">148dp</dimen>
-    <dimen name="settings_sidebar_collapsed">52dp</dimen>
+    <dimen name="settings_sidebar_width">148dp</dimen>
 </resources>
