@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.ddtask.scheduler.BuildConfig
+import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
 import com.ddtask.scheduler.databinding.FragmentSettingsBinding
 import com.ddtask.scheduler.util.BrightnessController
@@ -57,6 +58,9 @@ class SettingsFragment : Fragment() {
             updateEmailUi()
         }
         binding.btnTestEmail.setOnClickListener { sendTestEmail() }
+        binding.btnRecheckPermissions.setOnClickListener {
+            (activity as? MainActivity)?.openPermissionSetup()
+        }
     }
 
     override fun onResume() {

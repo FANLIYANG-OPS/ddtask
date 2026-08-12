@@ -22,11 +22,16 @@ class SettingsStorage(context: Context) {
         get() = prefs.getInt(KEY_SAVED_SCREEN_TIMEOUT, -1)
         set(value) = prefs.edit().putInt(KEY_SAVED_SCREEN_TIMEOUT, value).apply()
 
+    var permissionSetupCompleted: Boolean
+        get() = prefs.getBoolean(KEY_PERMISSION_SETUP_COMPLETED, false)
+        set(value) = prefs.edit().putBoolean(KEY_PERMISSION_SETUP_COMPLETED, value).apply()
+
     companion object {
         private const val PREFS_NAME = "ddtask_settings"
         private const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
         private const val KEY_DIM_SCREEN = "dim_screen"
         private const val KEY_SAVED_BRIGHTNESS = "saved_brightness"
         private const val KEY_SAVED_SCREEN_TIMEOUT = "saved_screen_timeout"
+        private const val KEY_PERMISSION_SETUP_COMPLETED = "permission_setup_completed"
     }
 }

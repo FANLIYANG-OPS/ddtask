@@ -91,4 +91,15 @@
     <string name="email_config_status_missing">邮件：未配置，请前往「设置」页配置</string>
     <string name="email_config_required_title">需要先配置邮件</string>
     <string name="email_config_required_message">请先在「设置」页完成收发件邮箱与 SMTP 配置，再开启打卡邮件通知。</string>
+    <string name="permission_setup_title">权限初始化</string>
+    <string name="permission_setup_intro">Android 系统限制，部分权限无法在安装时自动授予。首次启动请依次完成以下授权，确保定时任务、屏幕常亮和打卡邮件通知正常工作。</string>
+    <string name="permission_setup_progress">已完成 %1$d / %2$d 项</string>
+    <string name="permission_setup_enter_app">进入应用</string>
+    <string name="permission_granted">已授权</string>
+    <string name="permission_pending">待授权</string>
+    <string name="permission_post_notifications_title">发送通知</string>
+    <string name="permission_post_notifications_message">允许应用显示前台服务通知（屏幕常亮等功能需要）</string>
+    <string name="permission_write_settings_setup_message">允许修改屏幕亮度与熄屏时间，用于屏幕常亮和最暗模式</string>
+    <string name="permission_overlay_message">允许在其他应用上层显示，用于定时打开钉钉时保持屏幕常亮</string>
+    <string name="permission_setup_recheck">重新检查权限</string>
 </resources>

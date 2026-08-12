@@ -1,18 +1,15 @@
 package com.ddtask.scheduler
 
-import android.app.AlarmManager
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.ddtask.scheduler.databinding.ActivityMainBinding
 import com.ddtask.scheduler.fragment.TasksFragment
 import com.ddtask.scheduler.ui.MainPagerAdapter
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.ddtask.scheduler.util.SettingsStorage
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,16 +20,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var settingsStorage: SettingsStorage
+
+    private val permissionSetupLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { /* user finished setup wizard */ }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        settingsStorage = SettingsStorage(this)
         setupViewPager()
         setupBottomNav()
         setupFab()
-        requestExactAlarmPermissionIfNeeded()
+        launchPermissionSetupIfNeeded()
+    }
+
+    private fun launchPermissionSetupIfNeeded() {
+        if (!settingsStorage.permissionSetupCompleted) {
+            permissionSetupLauncher.launch(
+                Intent(this, PermissionSetupActivity::class.java)
+            )
+        }
     }
 
     private fun setupViewPager() {
@@ -73,21 +84,9 @@ class MainActivity : AppCompatActivity() {
         binding.viewPager.setCurrentItem(index, false)
     }
 
-    private fun requestExactAlarmPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(AlarmManager::class.java)
-            if (!alarmManager.canScheduleExactAlarms()) {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle(R.string.exact_alarm_title)
-                    .setMessage(R.string.exact_alarm_message)
-                    .setPositiveButton(R.string.go_settings) { _, _ ->
-                        startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                            data = Uri.parse("package:$packageName")
-                        })
-                    }
-                    .setNegativeButton(R.string.later, null)
-                    .show()
-            }
-        }
+    fun openPermissionSetup() {
+        permissionSetupLauncher.launch(
+            Intent(this, PermissionSetupActivity::class.java)
+        )
     }
 }
