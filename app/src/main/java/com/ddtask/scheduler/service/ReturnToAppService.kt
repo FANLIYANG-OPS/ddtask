@@ -3,7 +3,6 @@ package com.ddtask.scheduler.service
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.os.Build
@@ -12,14 +11,17 @@ import androidx.core.app.NotificationCompat
 import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
 
-/** 短暂前台服务，用于从后台（如通知监听）合法拉起主界面。 */
+/**
+ * 短暂前台服务，用于从后台（如通知监听）合法拉起主界面。
+ * Android 8.0 以下以前台服务非必须，直接 startService 后 startActivity 即可。
+ */
 class ReturnToAppService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        createChannel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createChannel()
             startForeground(NOTIFICATION_ID, createNotification())
         }
 
@@ -34,11 +36,13 @@ class ReturnToAppService : Service() {
             }
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+            } else {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            }
         }
         stopSelf()
         return START_NOT_STICKY
@@ -56,7 +60,13 @@ class ReturnToAppService : Service() {
     }
 
     private fun createNotification(): Notification {
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationCompat.Builder(this, CHANNEL_ID)
+        } else {
+            @Suppress("DEPRECATION")
+            NotificationCompat.Builder(this)
+        }
+        return builder
             .setContentTitle(getString(R.string.return_to_app_title))
             .setContentText(getString(R.string.return_to_app_desc))
             .setSmallIcon(R.drawable.ic_launcher_foreground)

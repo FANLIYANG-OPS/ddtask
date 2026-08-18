@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.ddtask.scheduler.receiver.ClockInSessionReceiver
+import com.ddtask.scheduler.util.PendingIntentCompat
 
 /**
  * 手动打卡会话：打开钉钉后 1 分钟内跟踪打卡成功与返回 DDTask，
@@ -150,8 +151,7 @@ class ClockInSessionManager(private val context: Context) {
             action = ClockInSessionReceiver.ACTION_SESSION_TIMEOUT
             putExtra(ClockInSessionReceiver.EXTRA_SESSION_ID, sessionId)
         }
-        val flags = PendingIntent.FLAG_UPDATE_CURRENT or
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+        val flags = PendingIntentCompat.updateCurrentImmutable()
         return PendingIntent.getBroadcast(appContext, REQUEST_CODE_TIMEOUT, intent, flags)
     }
 

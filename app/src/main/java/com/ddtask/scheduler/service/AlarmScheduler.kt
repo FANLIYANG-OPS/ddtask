@@ -9,6 +9,7 @@ import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.model.ScheduledTask
 import com.ddtask.scheduler.receiver.AlarmReceiver
 import com.ddtask.scheduler.util.ExactAlarmHelper
+import com.ddtask.scheduler.util.PendingIntentCompat
 import com.ddtask.scheduler.util.ScheduleCalculator
 import com.ddtask.scheduler.util.TaskStorage
 
@@ -50,7 +51,7 @@ class AlarmScheduler(private val context: Context) {
                         appContext,
                         REQUEST_SHOW + task.id.toInt(),
                         Intent(appContext, MainActivity::class.java),
-                        pendingIntentFlags()
+                        PendingIntentCompat.updateCurrentImmutable()
                     )
                     alarmManager.setAlarmClock(
                         AlarmManager.AlarmClockInfo(triggerAt, showIntent),
@@ -72,7 +73,12 @@ class AlarmScheduler(private val context: Context) {
     }
 
     fun rescheduleAll() {
-        if (!ExactAlarmHelper.canScheduleExactAlarms(appContext)) return
+        // Android 6.0 无精确闹钟权限弹窗，直接注册；Android 12+ 需已授权
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            !ExactAlarmHelper.canScheduleExactAlarms(appContext)
+        ) {
+            return
+        }
         taskStorage.getAll().forEach { schedule(it) }
     }
 
@@ -85,13 +91,8 @@ class AlarmScheduler(private val context: Context) {
             appContext,
             REQUEST_ALARM_BASE + taskId.toInt(),
             intent,
-            pendingIntentFlags()
+            PendingIntentCompat.updateCurrentImmutable()
         )
-    }
-
-    private fun pendingIntentFlags(): Int {
-        return PendingIntent.FLAG_UPDATE_CURRENT or
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
     }
 
     companion object {

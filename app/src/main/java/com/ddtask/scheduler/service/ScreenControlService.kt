@@ -11,6 +11,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
+import com.ddtask.scheduler.util.PendingIntentCompat
 import com.ddtask.scheduler.util.ScreenKeepOnController
 
 /** 前台服务：定时触发后保持屏幕常亮，通知栏可手动停止。 */
@@ -90,10 +91,7 @@ class ScreenControlService : Service() {
             .build()
     }
 
-    private fun pendingIntentFlags(): Int {
-        return PendingIntent.FLAG_UPDATE_CURRENT or
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-    }
+    private fun pendingIntentFlags(): Int = PendingIntentCompat.updateCurrentImmutable()
 
     companion object {
         const val ACTION_STOP = "com.ddtask.scheduler.STOP_SCREEN_CONTROL"

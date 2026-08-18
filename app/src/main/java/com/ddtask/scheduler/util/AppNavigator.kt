@@ -9,7 +9,7 @@ import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.service.ReturnToAppService
 import com.ddtask.scheduler.service.ScreenControlService
 
-/** 将 DDTask 主界面带到前台（兼容后台启动限制）。 */
+/** 将 DDTask 主界面带到前台（兼容 Android 6.0+ 后台启动限制）。 */
 object AppNavigator {
 
     fun goToMain(context: Context) {
@@ -25,6 +25,10 @@ object AppNavigator {
             )
         }
 
+        // Android 6.0–9 后台启动限制较松，优先直接 startActivity
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (tryDirectLaunch(appContext, intent)) return
+        }
         if (tryPendingIntentLaunch(appContext, intent)) return
         if (tryDirectLaunch(appContext, intent)) return
         tryForegroundServiceLaunch(appContext)
@@ -44,7 +48,7 @@ object AppNavigator {
                 context,
                 REQUEST_RETURN,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntentCompat.updateCurrentImmutable()
             )
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 val options = ActivityOptions.makeBasic().apply {
@@ -85,6 +89,7 @@ object AppNavigator {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(serviceIntent)
         } else {
+            // Android 6.0/7.x：普通 startService 即可拉起界面
             context.startService(serviceIntent)
         }
     }

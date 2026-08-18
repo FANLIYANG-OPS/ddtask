@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.ddtask.scheduler.receiver.GoHomeReceiver
+import com.ddtask.scheduler.util.PendingIntentCompat
 
 /**
  * 定时打开钉钉后的延迟操作调度。
@@ -58,9 +59,12 @@ class GoHomeScheduler(private val context: Context) {
             this.action = action
             putExtra(GoHomeReceiver.EXTRA_TASK_ID, taskId)
         }
-        val flags = PendingIntent.FLAG_UPDATE_CURRENT or
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-        return PendingIntent.getBroadcast(context, requestCode, intent, flags)
+        return PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntentCompat.updateCurrentImmutable()
+        )
     }
 
     companion object {
