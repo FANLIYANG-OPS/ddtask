@@ -11,8 +11,8 @@ android {
         applicationId = "com.ddtask.scheduler"
         minSdk = 23
         targetSdk = 34
-        versionCode = 30
-        versionName = "1.14.6"
+        versionCode = 31
+        versionName = "1.15.0"
     }
 
     buildTypes {

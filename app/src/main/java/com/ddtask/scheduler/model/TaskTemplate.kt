@@ -1,12 +1,14 @@
 package com.ddtask.scheduler.model
 
+import com.ddtask.scheduler.util.NewTaskSpec
+
 data class TaskTemplateEntry(
     val hour: Int,
     val minute: Int,
     val label: String
 )
 
-/** 夏/冬季上下班预设，生成两个「中国工作日」重复任务。 */
+/** 夏/冬季上下班预设：仅提供数据，创建时生成两条独立任务。 */
 enum class TaskTemplate(val entries: List<TaskTemplateEntry>) {
     SUMMER(
         listOf(
@@ -21,17 +23,14 @@ enum class TaskTemplate(val entries: List<TaskTemplateEntry>) {
         )
     );
 
-    fun createTasks(nextId: () -> Long): List<ScheduledTask> {
+    fun toTaskSpecs(): List<NewTaskSpec> {
         return entries.map { entry ->
-            ScheduledTask(
-                id = nextId(),
+            NewTaskSpec(
                 hour = entry.hour,
                 minute = entry.minute,
                 label = entry.label,
                 enabled = true,
-                repeatDaily = false,
-                repeatMode = RepeatMode.WEEKDAYS.key,
-                cronExpression = ""
+                repeatMode = RepeatMode.WEEKDAYS
             )
         }
     }

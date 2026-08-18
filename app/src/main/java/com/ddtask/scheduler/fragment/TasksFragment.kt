@@ -15,23 +15,22 @@ import com.ddtask.scheduler.databinding.FragmentTasksBinding
 import com.ddtask.scheduler.model.RepeatMode
 import com.ddtask.scheduler.model.ScheduledTask
 import com.ddtask.scheduler.model.TaskTemplate
-import com.ddtask.scheduler.service.AlarmScheduler
 import com.ddtask.scheduler.ui.TaskAdapter
 import com.ddtask.scheduler.util.ExactAlarmHelper
+import com.ddtask.scheduler.util.NewTaskSpec
 import com.ddtask.scheduler.util.ScheduleCalculator
-import com.ddtask.scheduler.util.TaskStorage
+import com.ddtask.scheduler.util.TaskRepository
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 
-/** 任务 Tab：列表展示、添加/编辑/删除定时任务，并与 [AlarmScheduler] 同步。 */
+/** 任务 Tab：列表展示、添加/编辑/删除定时任务。 */
 class TasksFragment : Fragment() {
 
     private var _binding: FragmentTasksBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var taskStorage: TaskStorage
-    private lateinit var alarmScheduler: AlarmScheduler
+    private lateinit var taskRepository: TaskRepository
     private lateinit var adapter: TaskAdapter
 
     override fun onCreateView(
@@ -45,8 +44,7 @@ class TasksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        taskStorage = TaskStorage(requireContext())
-        alarmScheduler = AlarmScheduler(requireContext())
+        taskRepository = TaskRepository(requireContext())
         setupRecyclerView()
     }
 
@@ -79,11 +77,9 @@ class TasksFragment : Fragment() {
             .show()
     }
 
+    /** 模板：一次写入两条独立任务，上班/下班除创建时机外无任何关联。 */
     private fun applyTemplate(template: TaskTemplate, nameRes: Int) {
-        template.createTasks { taskStorage.nextId() }.forEach { task ->
-            taskStorage.add(task)
-            alarmScheduler.schedule(task)
-        }
+        taskRepository.createIndependent(template.toTaskSpecs())
         refreshTaskList()
         Toast.makeText(
             requireContext(),
@@ -95,62 +91,48 @@ class TasksFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = TaskAdapter(
             onEdit = { task -> showTaskDialog(task) },
-            onToggle = { task, enabled ->
-                if (!isAdded) return@TaskAdapter
-                val updated = task.copy(enabled = enabled)
-                taskStorage.update(updated)
-                if (enabled) {
-                    val scheduled = alarmScheduler.schedule(updated)
-                    val hasExactAlarm = ExactAlarmHelper.canScheduleExactAlarms(requireContext())
-                    if (!scheduled && !hasExactAlarm) {
-                        val reverted = task.copy(enabled = false)
-                        taskStorage.update(reverted)
-                        binding.recyclerTasks.post {
-                            if (isAdded) {
-                                adapter.updateTask(reverted)
-                                Toast.makeText(
-                                    requireContext(),
-                                    R.string.exact_alarm_message,
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                try {
-                                    ExactAlarmHelper.openSettings(requireContext())
-                                } catch (_: Exception) {
-                                }
-                            }
-                        }
-                    } else {
-                        binding.recyclerTasks.post {
-                            if (isAdded) adapter.updateTask(updated)
-                        }
-                    }
-                } else {
-                    alarmScheduler.cancel(task.id)
-                    binding.recyclerTasks.post {
-                        if (isAdded) adapter.updateTask(updated)
-                    }
-                }
-            },
-            onDelete = { task ->
-                MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.delete_task)
-                    .setMessage(getString(R.string.delete_task_confirm, task.timeText()))
-                    .setPositiveButton(R.string.delete) { _, _ ->
-                        alarmScheduler.cancel(task.id)
-                        taskStorage.delete(task.id)
-                        refreshTaskList()
-                    }
-                    .setNegativeButton(R.string.cancel, null)
-                    .show()
-            }
+            onToggle = { task, enabled -> handleToggle(task, enabled) },
+            onDelete = { task -> confirmDelete(task) }
         )
         binding.recyclerTasks.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerTasks.adapter = adapter
     }
 
+    private fun handleToggle(task: ScheduledTask, enabled: Boolean) {
+        if (!isAdded) return
+        val result = taskRepository.setEnabled(task, enabled)
+        binding.recyclerTasks.post {
+            if (!isAdded) return@post
+            refreshTaskList()
+            if (result.scheduleFailed && !ExactAlarmHelper.canScheduleExactAlarms(requireContext())) {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.exact_alarm_message,
+                    Toast.LENGTH_LONG
+                ).show()
+                try {
+                    ExactAlarmHelper.openSettings(requireContext())
+                } catch (_: Exception) {
+                }
+            }
+        }
+    }
+
+    private fun confirmDelete(task: ScheduledTask) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.delete_task)
+            .setMessage(getString(R.string.delete_task_confirm, task.timeText()))
+            .setPositiveButton(R.string.delete) { _, _ ->
+                taskRepository.delete(task.id)
+                refreshTaskList()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
     private fun refreshTaskList() {
-        val tasks = taskStorage.getAll().sortedBy { it.hour * 60 + it.minute }
-        adapter.submitList(tasks)
+        val tasks = taskRepository.list()
+        adapter.submitTasks(tasks)
         binding.emptyView.visibility = if (tasks.isEmpty()) View.VISIBLE else View.GONE
         binding.hintEdit.visibility = if (tasks.isEmpty()) View.GONE else View.VISIBLE
     }
@@ -232,55 +214,58 @@ class TasksFragment : Fragment() {
                 }
             }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val label = dialogBinding.etLabel.text?.toString()?.trim().orEmpty()
-                val mode = selectedMode
-                val cronExpression = if (mode == RepeatMode.CRON) {
-                    dialogBinding.etCron.text?.toString()?.trim().orEmpty()
-                } else {
-                    ""
-                }
-
-                if (mode == RepeatMode.CRON && !ScheduleCalculator.isValidCron(cronExpression)) {
-                    Toast.makeText(requireContext(), R.string.cron_invalid, Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-
-                val repeatDaily = mode == RepeatMode.DAILY
-
-                if (isEdit) {
-                    alarmScheduler.cancel(existingTask!!.id)
-                    val updated = existingTask.copy(
-                        hour = selectedHour,
-                        minute = selectedMinute,
-                        label = label,
-                        repeatDaily = repeatDaily,
-                        repeatMode = mode.key,
-                        cronExpression = cronExpression
-                    )
-                    taskStorage.update(updated)
-                    if (updated.enabled) {
-                        alarmScheduler.schedule(updated)
+                saveTaskFromDialog(
+                    isEdit = isEdit,
+                    existingTask = existingTask,
+                    label = dialogBinding.etLabel.text?.toString()?.trim().orEmpty(),
+                    hour = selectedHour,
+                    minute = selectedMinute,
+                    mode = selectedMode,
+                    cronExpression = if (selectedMode == RepeatMode.CRON) {
+                        dialogBinding.etCron.text?.toString()?.trim().orEmpty()
+                    } else {
+                        ""
                     }
-                } else {
-                    val task = ScheduledTask(
-                        id = taskStorage.nextId(),
-                        hour = selectedHour,
-                        minute = selectedMinute,
-                        label = label,
-                        enabled = true,
-                        repeatDaily = repeatDaily,
-                        repeatMode = mode.key,
-                        cronExpression = cronExpression
-                    )
-                    taskStorage.add(task)
-                    alarmScheduler.schedule(task)
+                )?.let {
+                    refreshTaskList()
+                    Toast.makeText(requireContext(), R.string.task_saved, Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
                 }
-                refreshTaskList()
-                Toast.makeText(requireContext(), R.string.task_saved, Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
             }
         }
         dialog.show()
+    }
+
+    private fun saveTaskFromDialog(
+        isEdit: Boolean,
+        existingTask: ScheduledTask?,
+        label: String,
+        hour: Int,
+        minute: Int,
+        mode: RepeatMode,
+        cronExpression: String
+    ): ScheduledTask? {
+        if (mode == RepeatMode.CRON && !ScheduleCalculator.isValidCron(cronExpression)) {
+            Toast.makeText(requireContext(), R.string.cron_invalid, Toast.LENGTH_SHORT).show()
+            return null
+        }
+
+        val spec = NewTaskSpec(
+            hour = hour,
+            minute = minute,
+            label = label,
+            enabled = existingTask?.enabled ?: true,
+            repeatMode = mode,
+            cronExpression = cronExpression
+        )
+
+        return if (isEdit && existingTask != null) {
+            taskRepository.update(
+                spec.toScheduledTask(existingTask.id).copy(enabled = existingTask.enabled)
+            )
+        } else {
+            taskRepository.create(spec)
+        }
     }
 
     private fun showTimePicker(hour: Int, minute: Int, onSelected: (Int, Int) -> Unit) {

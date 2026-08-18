@@ -27,6 +27,19 @@ class TaskStorage(context: Context) {
         saveAll(tasks)
     }
 
+    fun addAll(newTasks: List<ScheduledTask>) {
+        if (newTasks.isEmpty()) return
+        val tasks = getAll().toMutableList()
+        tasks.addAll(newTasks)
+        saveAll(tasks)
+    }
+
+    fun nextIds(count: Int): List<Long> {
+        if (count <= 0) return emptyList()
+        val start = nextId()
+        return List(count) { index -> start + index }
+    }
+
     fun update(task: ScheduledTask) {
         val tasks = getAll().toMutableList()
         val index = tasks.indexOfFirst { it.id == task.id }
