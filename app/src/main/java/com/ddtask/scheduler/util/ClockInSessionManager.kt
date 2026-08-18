@@ -13,9 +13,10 @@ import com.ddtask.scheduler.receiver.ClockInSessionReceiver
  */
 class ClockInSessionManager(private val context: Context) {
 
-    private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-    private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    private val notificationStorage = NotificationStorage(context)
+    private val appContext = context.applicationContext
+    private val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    private val notificationStorage = NotificationStorage(appContext)
 
     fun startSession(triggerSummary: String) {
         val sessionId = System.currentTimeMillis()
@@ -41,15 +42,16 @@ class ClockInSessionManager(private val context: Context) {
         if (!isActive() || prefs.getBoolean(KEY_CLOCK_IN_SUCCESS, false)) return
         prefs.edit().putBoolean(KEY_CLOCK_IN_SUCCESS, true).apply()
         sendClockInSuccessEmailIfNeeded(notificationText)
+        if (notificationStorage.closeDingTalkEnabled && !prefs.getBoolean(KEY_RETURNED, false)) {
+            performReturn(notificationText)
+        }
     }
 
     /** 匹配返回关键字时回到 DDTask 并记录返回成功。 */
     fun onReturnKeywordMatched(notificationText: String) {
         if (!isActive() || !notificationStorage.closeDingTalkEnabled) return
         if (prefs.getBoolean(KEY_RETURNED, false)) return
-        AppNavigator.goToMain(context.applicationContext)
-        markReturned()
-        sendReturnSuccessEmailIfNeeded(notificationText)
+        performReturn(notificationText)
     }
 
     /** 主界面恢复前台时标记已返回（如 GoHome 或用户手动切回）。 */
@@ -62,32 +64,37 @@ class ClockInSessionManager(private val context: Context) {
 
     fun onTimeout(sessionId: Long) {
         if (prefs.getLong(KEY_SESSION_ID, 0L) != sessionId) return
-        if (!notificationStorage.emailNotifyEnabled || !notificationStorage.isConfigured()) {
-            clearSession()
-            return
-        }
 
         val triggerSummary = prefs.getString(KEY_TRIGGER_SUMMARY, "").orEmpty()
-        if (!prefs.getBoolean(KEY_CLOCK_IN_SUCCESS, false) &&
-            !prefs.getBoolean(KEY_CLOCK_IN_EMAIL_SENT, false)
-        ) {
-            prefs.edit().putBoolean(KEY_CLOCK_IN_EMAIL_SENT, true).apply()
-            EmailSender.sendClockInFailure(context, triggerSummary) { success, _ ->
-                if (success) notificationStorage.recordEmailSent("打卡失败（超时）")
+        if (notificationStorage.emailNotifyEnabled && notificationStorage.isConfigured()) {
+            if (!prefs.getBoolean(KEY_CLOCK_IN_SUCCESS, false) &&
+                !prefs.getBoolean(KEY_CLOCK_IN_EMAIL_SENT, false)
+            ) {
+                prefs.edit().putBoolean(KEY_CLOCK_IN_EMAIL_SENT, true).apply()
+                EmailSender.sendClockInFailure(appContext, triggerSummary) { success, _ ->
+                    if (success) notificationStorage.recordEmailSent("打卡失败（超时）")
+                }
             }
         }
 
         if (notificationStorage.closeDingTalkEnabled &&
+            notificationStorage.isConfigured() &&
             !prefs.getBoolean(KEY_RETURNED, false) &&
             !prefs.getBoolean(KEY_RETURN_EMAIL_SENT, false)
         ) {
             prefs.edit().putBoolean(KEY_RETURN_EMAIL_SENT, true).apply()
-            EmailSender.sendReturnFailure(context, triggerSummary) { success, _ ->
+            EmailSender.sendReturnFailure(appContext, triggerSummary) { success, _ ->
                 if (success) notificationStorage.recordEmailSent("返回 DDTask 失败（超时）")
             }
         }
 
         clearSession()
+    }
+
+    private fun performReturn(detail: String) {
+        AppNavigator.goToMain(appContext)
+        markReturned()
+        sendReturnSuccessEmailIfNeeded(detail)
     }
 
     private fun markReturned() {
@@ -98,16 +105,16 @@ class ClockInSessionManager(private val context: Context) {
         if (!notificationStorage.emailNotifyEnabled || !notificationStorage.isConfigured()) return
         if (prefs.getBoolean(KEY_CLOCK_IN_EMAIL_SENT, false)) return
         prefs.edit().putBoolean(KEY_CLOCK_IN_EMAIL_SENT, true).apply()
-        EmailSender.sendClockInSuccess(context, notificationText) { success, _ ->
+        EmailSender.sendClockInSuccess(appContext, notificationText) { success, _ ->
             if (success) notificationStorage.recordEmailSent(notificationText)
         }
     }
 
     private fun sendReturnSuccessEmailIfNeeded(detail: String) {
-        if (!notificationStorage.emailNotifyEnabled || !notificationStorage.isConfigured()) return
+        if (!notificationStorage.closeDingTalkEnabled || !notificationStorage.isConfigured()) return
         if (prefs.getBoolean(KEY_RETURN_EMAIL_SENT, false)) return
         prefs.edit().putBoolean(KEY_RETURN_EMAIL_SENT, true).apply()
-        EmailSender.sendReturnSuccess(context, detail) { success, _ ->
+        EmailSender.sendReturnSuccess(appContext, detail) { success, _ ->
             if (success) notificationStorage.recordEmailSent("已返回 DDTask")
         }
     }
@@ -116,14 +123,18 @@ class ClockInSessionManager(private val context: Context) {
         cancelTimeout()
         val triggerAt = sessionId + SESSION_TIMEOUT_MS
         val pendingIntent = createTimeoutPendingIntent(sessionId)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerAt,
-                pendingIntent
-            )
-        } else {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerAt,
+                    pendingIntent
+                )
+            } else {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pendingIntent)
+            }
+        } catch (_: SecurityException) {
+            // 无精确闹钟权限时仍保留会话，仅依赖内存超时判断
         }
     }
 
@@ -135,13 +146,13 @@ class ClockInSessionManager(private val context: Context) {
     }
 
     private fun createTimeoutPendingIntent(sessionId: Long): PendingIntent {
-        val intent = Intent(context, ClockInSessionReceiver::class.java).apply {
+        val intent = Intent(appContext, ClockInSessionReceiver::class.java).apply {
             action = ClockInSessionReceiver.ACTION_SESSION_TIMEOUT
             putExtra(ClockInSessionReceiver.EXTRA_SESSION_ID, sessionId)
         }
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-        return PendingIntent.getBroadcast(context, REQUEST_CODE_TIMEOUT, intent, flags)
+        return PendingIntent.getBroadcast(appContext, REQUEST_CODE_TIMEOUT, intent, flags)
     }
 
     private fun clearSession() {

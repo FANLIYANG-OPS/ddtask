@@ -96,26 +96,36 @@ class TasksFragment : Fragment() {
         adapter = TaskAdapter(
             onEdit = { task -> showTaskDialog(task) },
             onToggle = { task, enabled ->
+                if (!isAdded) return@TaskAdapter
                 val updated = task.copy(enabled = enabled)
                 taskStorage.update(updated)
                 if (enabled) {
-                    if (!alarmScheduler.schedule(updated) &&
-                        !ExactAlarmHelper.canScheduleExactAlarms(requireContext())
-                    ) {
-                        taskStorage.update(task.copy(enabled = false))
-                        adapter.updateTask(task.copy(enabled = false))
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.exact_alarm_message,
-                            Toast.LENGTH_LONG
-                        ).show()
-                        ExactAlarmHelper.openSettings(requireContext())
-                        return@TaskAdapter
+                    val scheduled = alarmScheduler.schedule(updated)
+                    val hasExactAlarm = ExactAlarmHelper.canScheduleExactAlarms(requireContext())
+                    if (!scheduled && !hasExactAlarm) {
+                        val reverted = task.copy(enabled = false)
+                        taskStorage.update(reverted)
+                        view?.post {
+                            if (isAdded) {
+                                adapter.updateTask(reverted)
+                                Toast.makeText(
+                                    requireContext(),
+                                    R.string.exact_alarm_message,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                try {
+                                    ExactAlarmHelper.openSettings(requireContext())
+                                } catch (_: Exception) {
+                                }
+                            }
+                        }
+                    } else {
+                        view?.post { if (isAdded) adapter.updateTask(updated) }
                     }
                 } else {
                     alarmScheduler.cancel(task.id)
+                    view?.post { if (isAdded) adapter.updateTask(updated) }
                 }
-                adapter.updateTask(updated)
             },
             onDelete = { task ->
                 MaterialAlertDialogBuilder(requireContext())

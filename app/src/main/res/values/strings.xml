@@ -139,5 +139,8 @@
     <string name="config_import_empty">配置内容为空</string>
     <string name="config_import_invalid">JSON 格式无效</string>
     <string name="config_import_unsupported">配置版本不支持</string>
+    <string name="return_to_app_channel">返回应用</string>
+    <string name="return_to_app_title">正在返回钉钉定时</string>
+    <string name="return_to_app_desc">关闭钉钉后返回 DDTask</string>
     <string name="config_import_failed">导入失败：%1$s</string>
 </resources>
