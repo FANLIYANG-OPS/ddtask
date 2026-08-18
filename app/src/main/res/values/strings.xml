@@ -120,7 +120,7 @@
     <string name="success_keywords_hint">打卡成功关键字（每行一个）</string>
     <string name="success_keywords_help">仅匹配钉钉通知，默认：极速打卡成功、打卡成功等</string>
     <string name="return_keywords_hint">返回 DDTask 关键字（每行一个）</string>
-    <string name="return_keywords_help">匹配后回到 DDTask；留空则使用打卡成功关键字。钉钉打卡成功或切回 App 均视为返回成功</string>
+    <string name="return_keywords_help">当其他 App 的通知栏出现以下文字时回到 DDTask（如短信、QQ 通知）；默认含「返回」。留空则使用内置默认关键字。</string>
     <string name="notification_settings_saved">监听配置已保存</string>
     <string name="keywords_config_summary">打开钉钉：%1$s\n打卡成功：%2$s\n返回 DDTask：%3$s</string>
     <string name="edit_keywords_config">修改配置</string>

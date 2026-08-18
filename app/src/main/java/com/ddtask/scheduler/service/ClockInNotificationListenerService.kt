@@ -36,12 +36,13 @@ class ClockInNotificationListenerService : NotificationListenerService() {
 
     private fun handleReturnToApp(storage: NotificationStorage, text: String, packageName: String) {
         if (!storage.closeDingTalkEnabled) return
-        if (!ClockInSessionManager(this).isActive()) return
-        val matchesReturn = ClockInDetector.matchesReturn(text, storage.returnKeywords, storage.successKeywords)
+        val sessionManager = ClockInSessionManager(this)
+        if (!sessionManager.canHandleReturnKeyword()) return
+        val matchesReturn = ClockInDetector.matchesReturn(text, storage.returnKeywords)
         val matchesDingTalkSuccess = packageName == ClockInDetector.DINGTALK_PACKAGE &&
             ClockInDetector.matchesSuccess(text, storage.successKeywords)
         if (!matchesReturn && !matchesDingTalkSuccess) return
-        ClockInSessionManager(this).onReturnKeywordMatched(text)
+        sessionManager.onReturnKeywordMatched(text)
     }
 
     private fun handleClockInSuccess(storage: NotificationStorage, packageName: String, text: String) {

@@ -71,6 +71,10 @@ class NotificationStorage(context: Context) {
         get() = prefs.getString(KEY_LAST_OPEN_SUMMARY, "").orEmpty()
         set(value) = prefs.edit().putString(KEY_LAST_OPEN_SUMMARY, value).apply()
 
+    private var lastReturnAt: Long
+        get() = prefs.getLong(KEY_LAST_RETURN_AT, 0L)
+        set(value) = prefs.edit().putLong(KEY_LAST_RETURN_AT, value).apply()
+
     fun isConfigured(): Boolean {
         return recipientEmail.isNotBlank() &&
             senderEmail.isNotBlank() &&
@@ -88,6 +92,35 @@ class NotificationStorage(context: Context) {
         return System.currentTimeMillis() - lastOpenDingTalkAt < OPEN_DINGTALK_INTERVAL_MS
     }
 
+    /** 手动打开钉钉后 5 分钟内可响应返回关键字（即使 1 分钟会话已结束）。 */
+    fun isWithinManualReturnWindow(): Boolean {
+        val lastOpen = lastOpenDingTalkAt
+        if (lastOpen <= 0L) return false
+        return System.currentTimeMillis() - lastOpen < MANUAL_RETURN_WINDOW_MS
+    }
+
+    /** 本次打开钉钉是否已完成返回。 */
+    var returnedForCurrentOpen: Boolean
+        get() = prefs.getBoolean(KEY_RETURNED_FOR_OPEN, false)
+        private set(value) = prefs.edit().putBoolean(KEY_RETURNED_FOR_OPEN, value).apply()
+
+    fun canAcceptReturnKeyword(): Boolean {
+        return isWithinManualReturnWindow() && !returnedForCurrentOpen
+    }
+
+    fun markReturnedForCurrentOpen() {
+        returnedForCurrentOpen = true
+    }
+
+    /** 2 秒内不重复触发返回，避免同一条通知多次匹配。 */
+    fun shouldSkipDuplicateReturn(): Boolean {
+        return System.currentTimeMillis() - lastReturnAt < RETURN_DEBOUNCE_MS
+    }
+
+    fun recordReturnTriggered() {
+        lastReturnAt = System.currentTimeMillis()
+    }
+
     fun recordEmailSent(summary: String) {
         prefs.edit()
             .putLong(KEY_LAST_SENT_AT, System.currentTimeMillis())
@@ -99,6 +132,7 @@ class NotificationStorage(context: Context) {
         prefs.edit()
             .putLong(KEY_LAST_OPEN_AT, System.currentTimeMillis())
             .putString(KEY_LAST_OPEN_SUMMARY, summary)
+            .putBoolean(KEY_RETURNED_FOR_OPEN, false)
             .apply()
     }
 
@@ -124,5 +158,9 @@ class NotificationStorage(context: Context) {
         private const val DEFAULT_SMTP_PORT = 465
         private const val DUPLICATE_INTERVAL_MS = 5 * 60 * 1000L
         private const val OPEN_DINGTALK_INTERVAL_MS = 60 * 1000L
+        private const val MANUAL_RETURN_WINDOW_MS = 5 * 60 * 1000L
+        private const val RETURN_DEBOUNCE_MS = 2 * 1000L
+        private const val KEY_LAST_RETURN_AT = "last_return_at"
+        private const val KEY_RETURNED_FOR_OPEN = "returned_for_open"
     }
 }

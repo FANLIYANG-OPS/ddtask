@@ -56,20 +56,30 @@ class ClockInSessionManager(private val context: Context) {
         }
     }
 
-    /** 匹配返回关键字时回到 DDTask 并记录返回成功。 */
+    /** 是否仍可响应返回关键字。 */
+    fun canHandleReturnKeyword(): Boolean {
+        return notificationStorage.canAcceptReturnKeyword()
+    }
+
+    /** 匹配返回关键字时回到 DDTask。 */
     fun onReturnKeywordMatched(notificationText: String) {
-        if (!isActive() || !notificationStorage.closeDingTalkEnabled) return
-        if (prefs.getBoolean(KEY_RETURNED, false)) return
+        if (!notificationStorage.closeDingTalkEnabled) return
+        if (!canHandleReturnKeyword()) return
+        if (notificationStorage.shouldSkipDuplicateReturn()) return
+        notificationStorage.recordReturnTriggered()
         performReturn(notificationText)
     }
 
-    /** 主界面恢复前台时标记已返回（如定时回退或用户手动切回）。 */
+    /** 主界面恢复前台时标记已返回（如定时回退、关键字或用户手动切回）。 */
     fun onAppForeground() {
-        if (!hasOpenSession()) return
-        if (prefs.getBoolean(KEY_RETURNED, false)) return
+        if (notificationStorage.returnedForCurrentOpen) return
+        if (!hasOpenSession() && !notificationStorage.isWithinManualReturnWindow()) return
         val detail = prefs.getString(KEY_PENDING_RETURN_DETAIL, null)
             ?: "已自动返回 DDTask"
-        markReturned()
+        if (hasOpenSession()) {
+            markReturned()
+        }
+        notificationStorage.markReturnedForCurrentOpen()
         if (notificationStorage.closeDingTalkEnabled) {
             sendReturnSuccessEmailIfNeeded(detail)
         }
