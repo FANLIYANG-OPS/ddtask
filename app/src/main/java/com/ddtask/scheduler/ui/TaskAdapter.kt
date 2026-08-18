@@ -16,6 +16,10 @@ class TaskAdapter(
 
     private var tasks: List<ScheduledTask> = emptyList()
 
+    init {
+        setHasStableIds(true)
+    }
+
     fun submitList(newTasks: List<ScheduledTask>) {
         tasks = newTasks
         notifyDataSetChanged()
@@ -27,6 +31,8 @@ class TaskAdapter(
         tasks = tasks.toMutableList().apply { set(index, updated) }
         notifyItemChanged(index, PAYLOAD_TOGGLE)
     }
+
+    override fun getItemId(position: Int): Long = tasks[position].id
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         holder.bind(tasks[position])
@@ -51,8 +57,29 @@ class TaskAdapter(
         private val binding: ItemTaskBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
+        /** 当前行绑定的任务 id，开关回调只认此 id，避免列表位置错位。 */
+        private var boundTaskId: Long = NO_TASK_ID
+        private var suppressToggleCallback = false
+
+        init {
+            binding.switchEnabled.setOnCheckedChangeListener { _, isChecked ->
+                if (suppressToggleCallback) return@setOnCheckedChangeListener
+                val task = tasks.find { it.id == boundTaskId } ?: return@setOnCheckedChangeListener
+                if (task.enabled == isChecked) return@setOnCheckedChangeListener
+                onToggle(task, isChecked)
+            }
+            binding.taskContent.setOnClickListener {
+                val task = tasks.find { it.id == boundTaskId } ?: return@setOnClickListener
+                onEdit(task)
+            }
+            binding.btnDelete.setOnClickListener {
+                val task = tasks.find { it.id == boundTaskId } ?: return@setOnClickListener
+                onDelete(task)
+            }
+        }
+
         fun bind(task: ScheduledTask) {
-            binding.root.tag = task.id
+            boundTaskId = task.id
             binding.tvTime.text = task.timeText()
             binding.tvLabel.text = if (task.label.isNotEmpty()) {
                 task.label
@@ -61,31 +88,19 @@ class TaskAdapter(
             }
             binding.tvRepeat.text = task.repeatText(binding.root.context.resources)
             bindToggle(task)
-            binding.taskContent.setOnClickListener {
-                val pos = bindingAdapterPosition
-                if (pos != RecyclerView.NO_POSITION) onEdit(tasks[pos])
-            }
-            binding.btnDelete.setOnClickListener {
-                val pos = bindingAdapterPosition
-                if (pos != RecyclerView.NO_POSITION) onDelete(tasks[pos])
-            }
         }
 
         fun bindToggle(task: ScheduledTask) {
-            binding.switchEnabled.setOnCheckedChangeListener(null)
+            boundTaskId = task.id
+            suppressToggleCallback = true
             binding.switchEnabled.isChecked = task.enabled
             binding.switchEnabled.jumpDrawablesToCurrentState()
-            binding.switchEnabled.setOnClickListener {
-                val pos = bindingAdapterPosition
-                if (pos == RecyclerView.NO_POSITION) return@setOnClickListener
-                val current = tasks.getOrNull(pos) ?: return@setOnClickListener
-                if (binding.root.tag != current.id) return@setOnClickListener
-                onToggle(current, binding.switchEnabled.isChecked)
-            }
+            suppressToggleCallback = false
         }
     }
 
     companion object {
         private const val PAYLOAD_TOGGLE = "toggle"
+        private const val NO_TASK_ID = -1L
     }
 }

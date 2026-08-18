@@ -105,7 +105,7 @@ class TasksFragment : Fragment() {
                     if (!scheduled && !hasExactAlarm) {
                         val reverted = task.copy(enabled = false)
                         taskStorage.update(reverted)
-                        view?.post {
+                        binding.recyclerTasks.post {
                             if (isAdded) {
                                 adapter.updateTask(reverted)
                                 Toast.makeText(
@@ -120,11 +120,15 @@ class TasksFragment : Fragment() {
                             }
                         }
                     } else {
-                        view?.post { if (isAdded) adapter.updateTask(updated) }
+                        binding.recyclerTasks.post {
+                            if (isAdded) adapter.updateTask(updated)
+                        }
                     }
                 } else {
                     alarmScheduler.cancel(task.id)
-                    view?.post { if (isAdded) adapter.updateTask(updated) }
+                    binding.recyclerTasks.post {
+                        if (isAdded) adapter.updateTask(updated)
+                    }
                 }
             },
             onDelete = { task ->
