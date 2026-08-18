@@ -51,6 +51,14 @@ class NotificationStorage(context: Context) {
         get() = prefs.getString(KEY_SUCCESS_KEYWORDS, ClockInDetector.defaultSuccessKeywordsText()).orEmpty()
         set(value) = prefs.edit().putString(KEY_SUCCESS_KEYWORDS, value).apply()
 
+    var returnKeywords: String
+        get() = prefs.getString(KEY_RETURN_KEYWORDS, ClockInDetector.defaultReturnKeywordsText()).orEmpty()
+        set(value) = prefs.edit().putString(KEY_RETURN_KEYWORDS, value).apply()
+
+    var closeDingTalkEnabled: Boolean
+        get() = prefs.getBoolean(KEY_CLOSE_DINGTALK, false)
+        set(value) = prefs.edit().putBoolean(KEY_CLOSE_DINGTALK, value).apply()
+
     var keywordsConfigured: Boolean
         get() = prefs.getBoolean(KEY_KEYWORDS_CONFIGURED, false)
         set(value) = prefs.edit().putBoolean(KEY_KEYWORDS_CONFIGURED, value).apply()
@@ -107,6 +115,8 @@ class NotificationStorage(context: Context) {
         private const val KEY_AUTO_OPEN_DINGTALK = "auto_open_dingtalk"
         private const val KEY_TRIGGER_KEYWORDS = "trigger_keywords"
         private const val KEY_SUCCESS_KEYWORDS = "success_keywords"
+        private const val KEY_RETURN_KEYWORDS = "return_keywords"
+        private const val KEY_CLOSE_DINGTALK = "close_dingtalk_enabled"
         private const val KEY_KEYWORDS_CONFIGURED = "keywords_configured"
         private const val KEY_LAST_OPEN_AT = "last_open_at"
         private const val KEY_LAST_OPEN_SUMMARY = "last_open_summary"

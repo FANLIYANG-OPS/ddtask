@@ -4,8 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.ddtask.scheduler.LaunchProxyActivity
-import com.ddtask.scheduler.MainActivity
-import com.ddtask.scheduler.service.ScreenControlService
+import com.ddtask.scheduler.util.AppNavigator
+import com.ddtask.scheduler.util.ClockInSessionManager
 import com.ddtask.scheduler.util.DingTalkLauncher
 
 /** 定时打开钉钉后的「回主界面 / 再次拉起钉钉」延迟广播接收器。 */
@@ -20,20 +20,8 @@ class GoHomeReceiver : BroadcastReceiver() {
 
     /** 回到 DDTask 主界面，隐藏钉钉 */
     private fun goToAppMain(context: Context) {
-        context.startService(
-            Intent(context, ScreenControlService::class.java).apply {
-                action = ScreenControlService.ACTION_STOP
-            }
-        )
-        context.startActivity(
-            Intent(context, MainActivity::class.java).apply {
-                addFlags(
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP
-                )
-            }
-        )
+        AppNavigator.goToMain(context)
+        ClockInSessionManager(context).onAppForeground()
     }
 
     private fun relaunchDingTalk(context: Context) {

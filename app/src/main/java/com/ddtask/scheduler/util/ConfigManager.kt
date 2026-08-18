@@ -30,8 +30,10 @@ class ConfigManager(private val context: Context) {
             smtpHost = notificationStorage.smtpHost,
             smtpPort = notificationStorage.smtpPort,
             autoOpenDingTalkEnabled = notificationStorage.autoOpenDingTalkEnabled,
+            closeDingTalkEnabled = notificationStorage.closeDingTalkEnabled,
             triggerKeywords = notificationStorage.triggerKeywords,
             successKeywords = notificationStorage.successKeywords,
+            returnKeywords = notificationStorage.returnKeywords,
             keywordsConfigured = notificationStorage.keywordsConfigured
         )
         return gson.toJson(config)
@@ -97,11 +99,15 @@ class ConfigManager(private val context: Context) {
         notificationStorage.smtpHost = config.smtpHost.ifBlank { "smtp.qq.com" }
         notificationStorage.smtpPort = config.smtpPort.takeIf { it in 1..65535 } ?: 465
         notificationStorage.autoOpenDingTalkEnabled = config.autoOpenDingTalkEnabled
+        notificationStorage.closeDingTalkEnabled = config.closeDingTalkEnabled
         notificationStorage.triggerKeywords = config.triggerKeywords.ifBlank {
             ClockInDetector.defaultTriggerKeywordsText()
         }
         notificationStorage.successKeywords = config.successKeywords.ifBlank {
             ClockInDetector.defaultSuccessKeywordsText()
+        }
+        notificationStorage.returnKeywords = config.returnKeywords.ifBlank {
+            ClockInDetector.defaultReturnKeywordsText()
         }
         notificationStorage.keywordsConfigured = keywordsConfigured
 

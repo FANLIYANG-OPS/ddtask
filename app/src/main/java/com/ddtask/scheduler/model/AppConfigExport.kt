@@ -14,12 +14,14 @@ data class AppConfigExport(
     val smtpHost: String = "",
     val smtpPort: Int = 465,
     val autoOpenDingTalkEnabled: Boolean = false,
+    val closeDingTalkEnabled: Boolean = false,
     val triggerKeywords: String = "",
     val successKeywords: String = "",
+    val returnKeywords: String = "",
     val keywordsConfigured: Boolean = false
 ) {
     companion object {
-        /** Unchanged so v1.12.0 exports/imports remain compatible. */
-        const val CURRENT_VERSION = 1
+        /** v1 导出不含新字段；v2 起增加关闭钉钉与返回关键字。 */
+        const val CURRENT_VERSION = 2
     }
 }

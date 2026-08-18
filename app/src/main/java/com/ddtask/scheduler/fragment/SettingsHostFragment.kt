@@ -77,11 +77,13 @@ class SettingsHostFragment : Fragment() {
     private fun loadKeywordForm() {
         binding.etTriggerKeywords.setText(notificationStorage.triggerKeywords)
         binding.etSuccessKeywords.setText(notificationStorage.successKeywords)
+        binding.etReturnKeywords.setText(notificationStorage.returnKeywords)
     }
 
     private fun saveKeywords() {
         notificationStorage.triggerKeywords = binding.etTriggerKeywords.text?.toString()?.trim().orEmpty()
         notificationStorage.successKeywords = binding.etSuccessKeywords.text?.toString()?.trim().orEmpty()
+        notificationStorage.returnKeywords = binding.etReturnKeywords.text?.toString()?.trim().orEmpty()
         notificationStorage.keywordsConfigured = true
         keywordsEditing = false
         updateKeywordsUi()
@@ -107,7 +109,14 @@ class SettingsHostFragment : Fragment() {
             notificationStorage.successKeywords,
             ClockInDetector.DEFAULT_SUCCESS_KEYWORDS
         ).joinToString("、")
-        return getString(R.string.keywords_config_summary, trigger, success)
+        val returnKw = ClockInDetector.parseKeywords(
+            notificationStorage.returnKeywords,
+            ClockInDetector.parseKeywords(
+                notificationStorage.successKeywords,
+                ClockInDetector.DEFAULT_SUCCESS_KEYWORDS
+            )
+        ).joinToString("、")
+        return getString(R.string.keywords_config_summary, trigger, success, returnKw)
     }
 
     private fun setupEmailSection() {

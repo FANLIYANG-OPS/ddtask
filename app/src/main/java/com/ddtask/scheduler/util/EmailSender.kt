@@ -14,7 +14,7 @@ import javax.mail.Transport
 import javax.mail.internet.InternetAddress
 import javax.mail.internet.MimeMessage
 
-/** 通过 JavaMail 在后台线程发送 SMTP 邮件（打卡通知 / 测试邮件）。 */
+/** 通过 JavaMail 在后台线程发送 SMTP 邮件（打卡/返回通知 / 测试邮件）。 */
 object EmailSender {
 
     fun sendClockInSuccess(
@@ -24,11 +24,60 @@ object EmailSender {
     ) {
         val storage = NotificationStorage(context)
         val subject = context.getString(R.string.email_clock_in_subject)
-        val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+        val time = nowText()
         val body = context.getString(
             R.string.email_clock_in_body,
             time,
-            notificationText.trim()
+            notificationText.trim(),
+            BatteryHelper.levelText(context)
+        )
+        sendAsync(storage, subject, body, onComplete)
+    }
+
+    fun sendClockInFailure(
+        context: Context,
+        triggerSummary: String,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        val storage = NotificationStorage(context)
+        val subject = context.getString(R.string.email_clock_in_failure_subject)
+        val body = context.getString(
+            R.string.email_clock_in_failure_body,
+            nowText(),
+            triggerSummary.trim(),
+            BatteryHelper.levelText(context)
+        )
+        sendAsync(storage, subject, body, onComplete)
+    }
+
+    fun sendReturnSuccess(
+        context: Context,
+        detail: String,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        val storage = NotificationStorage(context)
+        val subject = context.getString(R.string.email_return_success_subject)
+        val body = context.getString(
+            R.string.email_return_success_body,
+            nowText(),
+            detail.trim(),
+            BatteryHelper.levelText(context)
+        )
+        sendAsync(storage, subject, body, onComplete)
+    }
+
+    fun sendReturnFailure(
+        context: Context,
+        triggerSummary: String,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        val storage = NotificationStorage(context)
+        val subject = context.getString(R.string.email_return_failure_subject)
+        val body = context.getString(
+            R.string.email_return_failure_body,
+            nowText(),
+            triggerSummary.trim(),
+            BatteryHelper.levelText(context)
         )
         sendAsync(storage, subject, body, onComplete)
     }
@@ -38,10 +87,17 @@ object EmailSender {
         onComplete: (Boolean, String?) -> Unit
     ) {
         val storage = NotificationStorage(context)
-        val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         val subject = context.getString(R.string.email_test_subject)
-        val body = context.getString(R.string.email_test_body, time)
+        val body = context.getString(
+            R.string.email_test_body,
+            nowText(),
+            BatteryHelper.levelText(context)
+        )
         sendAsync(storage, subject, body, onComplete)
+    }
+
+    private fun nowText(): String {
+        return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
     }
 
     private fun sendAsync(
@@ -71,7 +127,6 @@ object EmailSender {
             put("mail.smtp.port", storage.smtpPort.toString())
             put("mail.smtp.auth", "true")
             if (storage.smtpPort == 465) {
-                // QQ 邮箱等常用 465 端口 SSL
                 put("mail.smtp.socketFactory.port", "465")
                 put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory")
                 put("mail.smtp.socketFactory.fallback", "false")

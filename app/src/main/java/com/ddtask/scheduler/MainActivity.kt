@@ -9,6 +9,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.ddtask.scheduler.databinding.ActivityMainBinding
 import com.ddtask.scheduler.fragment.TasksFragment
 import com.ddtask.scheduler.ui.MainPagerAdapter
+import com.ddtask.scheduler.util.ClockInSessionManager
 import com.ddtask.scheduler.util.SettingsStorage
 
 /** 应用主界面：任务 / 通知 / 设置 三 Tab，首次进入时弹出权限向导。 */
@@ -37,6 +38,11 @@ class MainActivity : AppCompatActivity() {
         setupBottomNav()
         setupFab()
         launchPermissionSetupIfNeeded()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ClockInSessionManager(this).onAppForeground()
     }
 
     /** 未完成权限向导时自动拉起 [PermissionSetupActivity]。 */

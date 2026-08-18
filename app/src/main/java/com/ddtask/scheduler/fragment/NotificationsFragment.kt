@@ -48,20 +48,6 @@ class NotificationsFragment : Fragment() {
         settingsStorage = SettingsStorage(requireContext())
         setupScreenSettings()
         loadSwitches()
-        binding.switchAutoOpenDingtalk.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked && !ensureListenerEnabled()) {
-                binding.switchAutoOpenDingtalk.isChecked = false
-                return@setOnCheckedChangeListener
-            }
-            notificationStorage.autoOpenDingTalkEnabled = isChecked
-        }
-        binding.switchEmailNotify.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked && !ensureEmailReady()) {
-                binding.switchEmailNotify.isChecked = false
-                return@setOnCheckedChangeListener
-            }
-            notificationStorage.emailNotifyEnabled = isChecked
-        }
     }
 
     override fun onResume() {
@@ -97,6 +83,16 @@ class NotificationsFragment : Fragment() {
                 return@setOnCheckedChangeListener
             }
             notificationStorage.emailNotifyEnabled = isChecked
+        }
+
+        binding.switchCloseDingtalk.setOnCheckedChangeListener(null)
+        binding.switchCloseDingtalk.isChecked = notificationStorage.closeDingTalkEnabled
+        binding.switchCloseDingtalk.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && !ensureCloseDingTalkReady()) {
+                binding.switchCloseDingtalk.isChecked = false
+                return@setOnCheckedChangeListener
+            }
+            notificationStorage.closeDingTalkEnabled = isChecked
         }
     }
 
@@ -157,6 +153,23 @@ class NotificationsFragment : Fragment() {
             return false
         }
         return ensureListenerEnabled()
+    }
+
+    /** 开启关闭钉钉前确认通知监听与邮件配置可用。 */
+    private fun ensureCloseDingTalkReady(): Boolean {
+        if (!ensureListenerEnabled()) return false
+        if (!notificationStorage.isConfigured()) {
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.email_config_required_title)
+                .setMessage(R.string.email_config_required_message)
+                .setPositiveButton(R.string.go_settings) { _, _ ->
+                    (activity as? MainActivity)?.openTab(MainActivity.TAB_SETTINGS)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+            return false
+        }
+        return true
     }
 
     private fun updateDingTalkStatus() {

@@ -17,9 +17,14 @@ object ClockInDetector {
         "下班打卡成功"
     )
 
+    /** 返回 DDTask 的默认关键字与打卡成功相同，可在设置中单独配置。 */
+    val DEFAULT_RETURN_KEYWORDS = DEFAULT_SUCCESS_KEYWORDS
+
     fun defaultTriggerKeywordsText(): String = DEFAULT_TRIGGER_KEYWORDS.joinToString("\n")
 
     fun defaultSuccessKeywordsText(): String = DEFAULT_SUCCESS_KEYWORDS.joinToString("\n")
+
+    fun defaultReturnKeywordsText(): String = DEFAULT_RETURN_KEYWORDS.joinToString("\n")
 
     /** 支持换行、逗号、分号分隔；空输入时回退到 [fallback]。 */
     fun parseKeywords(raw: String, fallback: List<String> = emptyList()): List<String> {
@@ -46,5 +51,10 @@ object ClockInDetector {
             text,
             parseKeywords(rawKeywords, DEFAULT_SUCCESS_KEYWORDS)
         )
+    }
+
+    fun matchesReturn(text: String, returnRaw: String, successRaw: String): Boolean {
+        val fallback = parseKeywords(successRaw, DEFAULT_SUCCESS_KEYWORDS)
+        return matchesAny(text, parseKeywords(returnRaw, fallback))
     }
 }
