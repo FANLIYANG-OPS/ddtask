@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import com.ddtask.scheduler.LaunchProxyActivity
 import com.ddtask.scheduler.util.AppNavigator
-import com.ddtask.scheduler.util.ClockInSessionManager
 import com.ddtask.scheduler.util.DingTalkLauncher
 
 /** 定时打开钉钉后的「回主界面 / 再次拉起钉钉」延迟广播接收器。 */
@@ -21,10 +20,9 @@ class GoHomeReceiver : BroadcastReceiver() {
         }
     }
 
-    /** 回到 DDTask 主界面，隐藏钉钉 */
+    /** 回到 DDTask 主界面；返回成功由 [MainActivity.onResume] 确认。 */
     private fun goToAppMain(context: Context) {
         AppNavigator.goToMain(context)
-        ClockInSessionManager(context).onAppForeground()
     }
 
     private fun relaunchDingTalk(context: Context) {

@@ -44,7 +44,7 @@ class GoHomeScheduler(private val context: Context) {
         alarmManager.cancel(createPendingIntent(taskId, GoHomeReceiver.ACTION_GO_HOME, requestCodeHideAgain(taskId)))
     }
 
-    /** 手动打卡会话：约 55 秒后尝试回到 DDTask（关闭钉钉流程的兜底）。 */
+    /** 手动打卡会话：1 分钟后回到 DDTask（无论是否打卡成功）。 */
     fun scheduleSessionReturn(sessionId: Long) {
         cancelSessionReturn(sessionId)
         scheduleAt(
@@ -92,7 +92,7 @@ class GoHomeScheduler(private val context: Context) {
         private const val HIDE_DELAY_MS = 60_000L
         private const val RELAUNCH_DELAY_MS = 3_000L
         private const val HIDE_AGAIN_DELAY_MS = 2_000L
-        private const val SESSION_RETURN_DELAY_MS = 55_000L
+        private const val SESSION_RETURN_DELAY_MS = 60_000L
 
         private const val REQUEST_HIDE_BASE = 500_000
         private const val REQUEST_RELAUNCH_BASE = 510_000

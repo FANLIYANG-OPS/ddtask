@@ -5,13 +5,14 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import com.ddtask.scheduler.receiver.ClockInSessionReceiver
 import com.ddtask.scheduler.service.GoHomeScheduler
-import com.ddtask.scheduler.util.PendingIntentCompat
 
 /**
  * 手动打卡会话：打开钉钉后 1 分钟内跟踪打卡成功与返回 DDTask，
- * 并按结果发送成功/失败邮件。
+ * 并按结果发送成功/失败邮件。无论是否打卡成功，1 分钟后都会回到 DDTask。
  */
 class ClockInSessionManager(private val context: Context) {
 
@@ -19,6 +20,7 @@ class ClockInSessionManager(private val context: Context) {
     private val prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     private val alarmManager = appContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager
     private val notificationStorage = NotificationStorage(appContext)
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     fun startSession(triggerSummary: String) {
         val sessionId = System.currentTimeMillis()
@@ -32,16 +34,18 @@ class ClockInSessionManager(private val context: Context) {
             .putString(KEY_TRIGGER_SUMMARY, triggerSummary)
             .apply()
         scheduleTimeout(sessionId)
-        if (notificationStorage.closeDingTalkEnabled) {
-            GoHomeScheduler(appContext).scheduleSessionReturn(sessionId)
-        }
+        GoHomeScheduler(appContext).scheduleSessionReturn(sessionId)
     }
 
+    /** 会话仍在 1 分钟窗口内（用于打卡成功/返回关键字匹配）。 */
     fun isActive(): Boolean {
         val start = prefs.getLong(KEY_SESSION_START, 0L)
         if (start <= 0L) return false
         return System.currentTimeMillis() - start < SESSION_TIMEOUT_MS
     }
+
+    /** 会话尚未结束（含 1 分钟超时后、清理前的短暂窗口）。 */
+    fun hasOpenSession(): Boolean = prefs.getLong(KEY_SESSION_ID, 0L) > 0L
 
     fun onClockInSuccess(notificationText: String) {
         if (!isActive() || prefs.getBoolean(KEY_CLOCK_IN_SUCCESS, false)) return
@@ -59,14 +63,16 @@ class ClockInSessionManager(private val context: Context) {
         performReturn(notificationText)
     }
 
-    /** 主界面恢复前台时标记已返回（如 GoHome 或用户手动切回）。 */
+    /** 主界面恢复前台时标记已返回（如定时回退或用户手动切回）。 */
     fun onAppForeground() {
-        if (!isActive() || !notificationStorage.closeDingTalkEnabled) return
+        if (!hasOpenSession()) return
         if (prefs.getBoolean(KEY_RETURNED, false)) return
         val detail = prefs.getString(KEY_PENDING_RETURN_DETAIL, null)
             ?: "已自动返回 DDTask"
         markReturned()
-        sendReturnSuccessEmailIfNeeded(detail)
+        if (notificationStorage.closeDingTalkEnabled) {
+            sendReturnSuccessEmailIfNeeded(detail)
+        }
     }
 
     fun onTimeout(sessionId: Long) {
@@ -84,18 +90,24 @@ class ClockInSessionManager(private val context: Context) {
             }
         }
 
-        if (notificationStorage.closeDingTalkEnabled &&
-            notificationStorage.isConfigured() &&
-            !prefs.getBoolean(KEY_RETURNED, false) &&
-            !prefs.getBoolean(KEY_RETURN_EMAIL_SENT, false)
-        ) {
-            prefs.edit().putBoolean(KEY_RETURN_EMAIL_SENT, true).apply()
-            EmailSender.sendReturnFailure(appContext, triggerSummary) { success, _ ->
-                if (success) notificationStorage.recordEmailSent("返回 DDTask 失败（超时）")
-            }
+        if (!prefs.getBoolean(KEY_RETURNED, false)) {
+            performReturn("会话超时（1分钟），自动返回 DDTask")
         }
 
-        clearSession()
+        mainHandler.postDelayed({
+            if (prefs.getLong(KEY_SESSION_ID, 0L) != sessionId) return@postDelayed
+            if (notificationStorage.closeDingTalkEnabled &&
+                notificationStorage.isConfigured() &&
+                !prefs.getBoolean(KEY_RETURNED, false) &&
+                !prefs.getBoolean(KEY_RETURN_EMAIL_SENT, false)
+            ) {
+                prefs.edit().putBoolean(KEY_RETURN_EMAIL_SENT, true).apply()
+                EmailSender.sendReturnFailure(appContext, triggerSummary) { success, _ ->
+                    if (success) notificationStorage.recordEmailSent("返回 DDTask 失败（超时）")
+                }
+            }
+            clearSession()
+        }, SESSION_FINALIZE_DELAY_MS)
     }
 
     private fun performReturn(detail: String) {
@@ -196,6 +208,7 @@ class ClockInSessionManager(private val context: Context) {
         private const val KEY_TRIGGER_SUMMARY = "trigger_summary"
         private const val KEY_PENDING_RETURN_DETAIL = "pending_return_detail"
         private const val SESSION_TIMEOUT_MS = 60_000L
+        private const val SESSION_FINALIZE_DELAY_MS = 4_000L
         private const val REQUEST_CODE_TIMEOUT = 600_000
     }
 }

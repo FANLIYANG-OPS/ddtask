@@ -31,9 +31,7 @@ class ClockInNotificationListenerService : NotificationListenerService() {
         if (storage.shouldSkipDuplicateOpen()) return
         if (!DingTalkLauncher.launch(this)) return
         storage.recordOpenDingTalk(text)
-        if (storage.emailNotifyEnabled || storage.closeDingTalkEnabled) {
-            ClockInSessionManager(this).startSession(text)
-        }
+        ClockInSessionManager(this).startSession(text)
     }
 
     private fun handleReturnToApp(storage: NotificationStorage, text: String, packageName: String) {
