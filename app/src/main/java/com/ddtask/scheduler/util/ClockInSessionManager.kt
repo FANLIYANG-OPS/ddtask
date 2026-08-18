@@ -56,15 +56,10 @@ class ClockInSessionManager(private val context: Context) {
         }
     }
 
-    /** 是否仍可响应返回关键字。 */
-    fun canHandleReturnKeyword(): Boolean {
-        return notificationStorage.canAcceptReturnKeyword()
-    }
-
-    /** 匹配返回关键字时回到 DDTask。 */
+    /** 钉钉打卡成功通知触发返回（仅手动打卡会话内）。 */
     fun onReturnKeywordMatched(notificationText: String) {
         if (!notificationStorage.closeDingTalkEnabled) return
-        if (!canHandleReturnKeyword()) return
+        if (prefs.getBoolean(KEY_RETURNED, false)) return
         if (notificationStorage.shouldSkipDuplicateReturn()) return
         notificationStorage.recordReturnTriggered()
         performReturn(notificationText)

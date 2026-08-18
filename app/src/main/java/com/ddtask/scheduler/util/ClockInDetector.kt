@@ -18,17 +18,13 @@ object ClockInDetector {
     )
 
     /** 返回 DDTask 的默认关键字；可在设置中单独配置。 */
-    val DEFAULT_RETURN_KEYWORDS = listOf(
-        "返回",
-        "回到ddtask",
-        "回到DDTask"
-    ) + DEFAULT_SUCCESS_KEYWORDS
+    val DEFAULT_RETURN_KEYWORDS = listOf("回家")
 
     fun defaultTriggerKeywordsText(): String = DEFAULT_TRIGGER_KEYWORDS.joinToString("\n")
 
     fun defaultSuccessKeywordsText(): String = DEFAULT_SUCCESS_KEYWORDS.joinToString("\n")
 
-    fun defaultReturnKeywordsText(): String = DEFAULT_RETURN_KEYWORDS.joinToString("\n")
+    fun defaultReturnKeywordsText(): String = "回家"
 
     /** 支持换行、逗号、分号分隔；空输入时回退到 [fallback]。 */
     fun parseKeywords(raw: String, fallback: List<String> = emptyList()): List<String> {

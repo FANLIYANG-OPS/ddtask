@@ -2,6 +2,7 @@ package com.ddtask.scheduler.service
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import com.ddtask.scheduler.util.AppNavigator
 import com.ddtask.scheduler.util.ClockInDetector
 import com.ddtask.scheduler.util.ClockInSessionManager
 import com.ddtask.scheduler.util.DingTalkLauncher
@@ -36,12 +37,20 @@ class ClockInNotificationListenerService : NotificationListenerService() {
 
     private fun handleReturnToApp(storage: NotificationStorage, text: String, packageName: String) {
         if (!storage.closeDingTalkEnabled) return
+
+        // 通知栏出现「回家」等返回关键字：DDTask 在后台时也立即回到前台
+        if (ClockInDetector.matchesReturn(text, storage.returnKeywords)) {
+            if (storage.shouldSkipDuplicateReturn()) return
+            storage.recordReturnTriggered()
+            AppNavigator.goToMain(this)
+            return
+        }
+
         val sessionManager = ClockInSessionManager(this)
-        if (!sessionManager.canHandleReturnKeyword()) return
-        val matchesReturn = ClockInDetector.matchesReturn(text, storage.returnKeywords)
+        if (!sessionManager.isActive()) return
         val matchesDingTalkSuccess = packageName == ClockInDetector.DINGTALK_PACKAGE &&
             ClockInDetector.matchesSuccess(text, storage.successKeywords)
-        if (!matchesReturn && !matchesDingTalkSuccess) return
+        if (!matchesDingTalkSuccess) return
         sessionManager.onReturnKeywordMatched(text)
     }
 

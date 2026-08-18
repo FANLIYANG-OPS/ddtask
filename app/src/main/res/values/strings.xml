@@ -68,7 +68,7 @@
     <string name="email_notify_enabled">打卡通知</string>
     <string name="email_notify_enabled_desc">手动打开钉钉后 1 分钟内：打卡成功发成功邮件，超时发失败邮件；邮件均含手机电量</string>
     <string name="close_dingtalk_enabled">关闭钉钉</string>
-    <string name="close_dingtalk_enabled_desc">打开钉钉后若切到其他 App，匹配返回关键字时回到 DDTask；返回成功/失败均发邮件</string>
+    <string name="close_dingtalk_enabled_desc">开启后：通知栏出现「回家」等关键字时回到 DDTask；手动打卡后 1 分钟也会自动返回</string>
     <string name="recipient_email_hint">收件邮箱</string>
     <string name="sender_email_hint">发件邮箱（SMTP 账号）</string>
     <string name="sender_password_hint">SMTP 授权码/密码</string>
@@ -119,8 +119,8 @@
     <string name="trigger_keywords_help">默认：上班打卡、下班打卡。支持短信、QQ 等第三方通知。</string>
     <string name="success_keywords_hint">打卡成功关键字（每行一个）</string>
     <string name="success_keywords_help">仅匹配钉钉通知，默认：极速打卡成功、打卡成功等</string>
-    <string name="return_keywords_hint">返回 DDTask 关键字（每行一个）</string>
-    <string name="return_keywords_help">当其他 App 的通知栏出现以下文字时回到 DDTask（如短信、QQ 通知）；默认含「返回」。留空则使用内置默认关键字。</string>
+    <string name="return_keywords_hint">返回 DDTask 关键字（每行一个，默认：回家）</string>
+    <string name="return_keywords_help">DDTask 在后台时，通知栏出现以下文字即回到前台（如短信、QQ 通知）。默认关键字为「回家」，可在下方自定义。</string>
     <string name="notification_settings_saved">监听配置已保存</string>
     <string name="keywords_config_summary">打开钉钉：%1$s\n打卡成功：%2$s\n返回 DDTask：%3$s</string>
     <string name="edit_keywords_config">修改配置</string>
