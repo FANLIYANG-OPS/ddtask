@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.ddtask.scheduler.databinding.ActivityMainBinding
 import com.ddtask.scheduler.fragment.TasksFragment
+import com.ddtask.scheduler.service.AlarmScheduler
 import com.ddtask.scheduler.ui.MainPagerAdapter
 import com.ddtask.scheduler.util.ClockInSessionManager
 import com.ddtask.scheduler.util.SettingsStorage
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         settingsStorage = SettingsStorage(this)
+        AlarmScheduler(this).rescheduleAll()
         setupViewPager()
         setupBottomNav()
         setupFab()

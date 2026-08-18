@@ -64,11 +64,20 @@
 
         <receiver
             android:name=".receiver.AlarmReceiver"
-            android:exported="false" />
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.ddtask.scheduler.ACTION_ALARM" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".receiver.GoHomeReceiver"
-            android:exported="false" />
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.ddtask.scheduler.ACTION_GO_HOME" />
+                <action android:name="com.ddtask.scheduler.ACTION_RELAUNCH_DINGTALK" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".receiver.ClockInSessionReceiver"

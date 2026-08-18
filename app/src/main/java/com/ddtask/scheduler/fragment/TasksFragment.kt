@@ -17,6 +17,7 @@ import com.ddtask.scheduler.model.ScheduledTask
 import com.ddtask.scheduler.model.TaskTemplate
 import com.ddtask.scheduler.service.AlarmScheduler
 import com.ddtask.scheduler.ui.TaskAdapter
+import com.ddtask.scheduler.util.ExactAlarmHelper
 import com.ddtask.scheduler.util.ScheduleCalculator
 import com.ddtask.scheduler.util.TaskStorage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -98,11 +99,23 @@ class TasksFragment : Fragment() {
                 val updated = task.copy(enabled = enabled)
                 taskStorage.update(updated)
                 if (enabled) {
-                    alarmScheduler.schedule(updated)
+                    if (!alarmScheduler.schedule(updated) &&
+                        !ExactAlarmHelper.canScheduleExactAlarms(requireContext())
+                    ) {
+                        taskStorage.update(task.copy(enabled = false))
+                        adapter.updateTask(task.copy(enabled = false))
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.exact_alarm_message,
+                            Toast.LENGTH_LONG
+                        ).show()
+                        ExactAlarmHelper.openSettings(requireContext())
+                        return@TaskAdapter
+                    }
                 } else {
                     alarmScheduler.cancel(task.id)
                 }
-                refreshTaskList()
+                adapter.updateTask(updated)
             },
             onDelete = { task ->
                 MaterialAlertDialogBuilder(requireContext())

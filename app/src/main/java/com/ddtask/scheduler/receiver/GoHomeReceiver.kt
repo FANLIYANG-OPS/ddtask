@@ -15,6 +15,9 @@ class GoHomeReceiver : BroadcastReceiver() {
         when (intent.action) {
             ACTION_GO_HOME -> goToAppMain(context)
             ACTION_RELAUNCH_DINGTALK -> relaunchDingTalk(context)
+            null -> {
+                // 部分系统投递时 action 为空，忽略
+            }
         }
     }
 

@@ -16,10 +16,23 @@ class TaskAdapter(
 
     private var tasks: List<ScheduledTask> = emptyList()
 
+    init {
+        setHasStableIds(true)
+    }
+
     fun submitList(newTasks: List<ScheduledTask>) {
         tasks = newTasks
         notifyDataSetChanged()
     }
+
+    fun updateTask(updated: ScheduledTask) {
+        val index = tasks.indexOfFirst { it.id == updated.id }
+        if (index < 0) return
+        tasks = tasks.toMutableList().apply { set(index, updated) }
+        notifyItemChanged(index)
+    }
+
+    override fun getItemId(position: Int): Long = tasks[position].id
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val binding = ItemTaskBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -46,8 +59,13 @@ class TaskAdapter(
             binding.tvRepeat.text = task.repeatText(binding.root.context.resources)
             binding.switchEnabled.setOnCheckedChangeListener(null)
             binding.switchEnabled.isChecked = task.enabled
+            binding.switchEnabled.jumpDrawablesToCurrentState()
             binding.switchEnabled.setOnCheckedChangeListener { _, isChecked ->
-                onToggle(task, isChecked)
+                val pos = bindingAdapterPosition
+                if (pos == RecyclerView.NO_POSITION) return@setOnCheckedChangeListener
+                val current = tasks.getOrNull(pos) ?: return@setOnCheckedChangeListener
+                if (current.enabled == isChecked) return@setOnCheckedChangeListener
+                onToggle(current, isChecked)
             }
             binding.taskContent.setOnClickListener { onEdit(task) }
             binding.btnDelete.setOnClickListener { onDelete(task) }

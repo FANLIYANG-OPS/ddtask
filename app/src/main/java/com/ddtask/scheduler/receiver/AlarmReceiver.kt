@@ -15,10 +15,9 @@ import com.ddtask.scheduler.util.TaskStorage
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action != ACTION_ALARM) return
-
         val taskId = intent.getLongExtra(EXTRA_TASK_ID, -1L)
         if (taskId < 0) return
+        if (intent.action != null && intent.action != ACTION_ALARM) return
 
         val taskStorage = TaskStorage(context)
         val task = taskStorage.getById(taskId) ?: return
