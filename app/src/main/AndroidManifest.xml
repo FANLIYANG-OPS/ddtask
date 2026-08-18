@@ -45,6 +45,15 @@
             android:turnScreenOn="true"
             android:theme="@style/Theme.DDTask.Transparent" />
 
+        <activity
+            android:name=".ReturnProxyActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.DDTask.Transparent" />
+
         <service
             android:name=".service.ScreenControlService"
             android:exported="false"

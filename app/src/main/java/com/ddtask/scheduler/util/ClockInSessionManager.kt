@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.ddtask.scheduler.receiver.ClockInSessionReceiver
+import com.ddtask.scheduler.service.GoHomeScheduler
 import com.ddtask.scheduler.util.PendingIntentCompat
 
 /**
@@ -31,6 +32,9 @@ class ClockInSessionManager(private val context: Context) {
             .putString(KEY_TRIGGER_SUMMARY, triggerSummary)
             .apply()
         scheduleTimeout(sessionId)
+        if (notificationStorage.closeDingTalkEnabled) {
+            GoHomeScheduler(appContext).scheduleSessionReturn(sessionId)
+        }
     }
 
     fun isActive(): Boolean {
@@ -59,8 +63,10 @@ class ClockInSessionManager(private val context: Context) {
     fun onAppForeground() {
         if (!isActive() || !notificationStorage.closeDingTalkEnabled) return
         if (prefs.getBoolean(KEY_RETURNED, false)) return
+        val detail = prefs.getString(KEY_PENDING_RETURN_DETAIL, null)
+            ?: "已自动返回 DDTask"
         markReturned()
-        sendReturnSuccessEmailIfNeeded("已自动返回 DDTask")
+        sendReturnSuccessEmailIfNeeded(detail)
     }
 
     fun onTimeout(sessionId: Long) {
@@ -93,13 +99,19 @@ class ClockInSessionManager(private val context: Context) {
     }
 
     private fun performReturn(detail: String) {
+        prefs.edit().putString(KEY_PENDING_RETURN_DETAIL, detail).apply()
         AppNavigator.goToMain(appContext)
-        markReturned()
-        sendReturnSuccessEmailIfNeeded(detail)
     }
 
     private fun markReturned() {
-        prefs.edit().putBoolean(KEY_RETURNED, true).apply()
+        val sessionId = prefs.getLong(KEY_SESSION_ID, 0L)
+        if (sessionId > 0L) {
+            GoHomeScheduler(appContext).cancelSessionReturn(sessionId)
+        }
+        prefs.edit()
+            .putBoolean(KEY_RETURNED, true)
+            .remove(KEY_PENDING_RETURN_DETAIL)
+            .apply()
     }
 
     private fun sendClockInSuccessEmailIfNeeded(notificationText: String) {
@@ -156,7 +168,11 @@ class ClockInSessionManager(private val context: Context) {
     }
 
     private fun clearSession() {
+        val sessionId = prefs.getLong(KEY_SESSION_ID, 0L)
         cancelTimeout()
+        if (sessionId > 0L) {
+            GoHomeScheduler(appContext).cancelSessionReturn(sessionId)
+        }
         prefs.edit()
             .remove(KEY_SESSION_ID)
             .remove(KEY_SESSION_START)
@@ -165,6 +181,7 @@ class ClockInSessionManager(private val context: Context) {
             .remove(KEY_CLOCK_IN_EMAIL_SENT)
             .remove(KEY_RETURN_EMAIL_SENT)
             .remove(KEY_TRIGGER_SUMMARY)
+            .remove(KEY_PENDING_RETURN_DETAIL)
             .apply()
     }
 
@@ -177,6 +194,7 @@ class ClockInSessionManager(private val context: Context) {
         private const val KEY_CLOCK_IN_EMAIL_SENT = "clock_in_email_sent"
         private const val KEY_RETURN_EMAIL_SENT = "return_email_sent"
         private const val KEY_TRIGGER_SUMMARY = "trigger_summary"
+        private const val KEY_PENDING_RETURN_DETAIL = "pending_return_detail"
         private const val SESSION_TIMEOUT_MS = 60_000L
         private const val REQUEST_CODE_TIMEOUT = 600_000
     }

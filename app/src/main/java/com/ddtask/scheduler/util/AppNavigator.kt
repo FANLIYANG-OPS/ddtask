@@ -1,11 +1,13 @@
 package com.ddtask.scheduler.util
 
+import android.app.Activity
 import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.ddtask.scheduler.MainActivity
+import com.ddtask.scheduler.ReturnProxyActivity
 import com.ddtask.scheduler.service.ReturnToAppService
 import com.ddtask.scheduler.service.ScreenControlService
 
@@ -15,8 +17,23 @@ object AppNavigator {
     fun goToMain(context: Context) {
         val appContext = context.applicationContext
         stopScreenControl(appContext)
+        val intent = mainIntent(appContext)
 
-        val intent = Intent(appContext, MainActivity::class.java).apply {
+        if (context is Activity) {
+            if (tryDirectLaunch(appContext, intent)) return
+            tryProxyLaunch(appContext)
+            return
+        }
+
+        // 通知监听、广播等后台上下文：透明 Activity 中转在 Android 6.0 上最可靠
+        if (tryProxyLaunch(appContext)) return
+        if (tryForegroundServiceLaunch(appContext)) return
+        if (tryPendingIntentLaunch(appContext, intent)) return
+        tryDirectLaunch(appContext, intent)
+    }
+
+    private fun mainIntent(context: Context): Intent {
+        return Intent(context, MainActivity::class.java).apply {
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or
                     Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -24,14 +41,6 @@ object AppNavigator {
                     Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             )
         }
-
-        // Android 6.0–9 后台启动限制较松，优先直接 startActivity
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            if (tryDirectLaunch(appContext, intent)) return
-        }
-        if (tryPendingIntentLaunch(appContext, intent)) return
-        if (tryDirectLaunch(appContext, intent)) return
-        tryForegroundServiceLaunch(appContext)
     }
 
     private fun stopScreenControl(context: Context) {
@@ -40,6 +49,23 @@ object AppNavigator {
                 action = ScreenControlService.ACTION_STOP
             }
         )
+    }
+
+    private fun tryProxyLaunch(context: Context): Boolean {
+        return try {
+            context.startActivity(
+                Intent(context, ReturnProxyActivity::class.java).apply {
+                    addFlags(
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                    )
+                }
+            )
+            true
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private fun tryPendingIntentLaunch(context: Context, intent: Intent): Boolean {
@@ -82,15 +108,19 @@ object AppNavigator {
         }
     }
 
-    private fun tryForegroundServiceLaunch(context: Context) {
-        val serviceIntent = Intent(context, ReturnToAppService::class.java).apply {
-            action = ReturnToAppService.ACTION_RETURN
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(serviceIntent)
-        } else {
-            // Android 6.0/7.x：普通 startService 即可拉起界面
-            context.startService(serviceIntent)
+    private fun tryForegroundServiceLaunch(context: Context): Boolean {
+        return try {
+            val serviceIntent = Intent(context, ReturnToAppService::class.java).apply {
+                action = ReturnToAppService.ACTION_RETURN
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
+            true
+        } catch (_: Exception) {
+            false
         }
     }
 

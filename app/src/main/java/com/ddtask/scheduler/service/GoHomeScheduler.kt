@@ -44,6 +44,27 @@ class GoHomeScheduler(private val context: Context) {
         alarmManager.cancel(createPendingIntent(taskId, GoHomeReceiver.ACTION_GO_HOME, requestCodeHideAgain(taskId)))
     }
 
+    /** 手动打卡会话：约 55 秒后尝试回到 DDTask（关闭钉钉流程的兜底）。 */
+    fun scheduleSessionReturn(sessionId: Long) {
+        cancelSessionReturn(sessionId)
+        scheduleAt(
+            sessionId,
+            GoHomeReceiver.ACTION_GO_HOME,
+            SESSION_RETURN_DELAY_MS,
+            requestCodeSessionReturn(sessionId)
+        )
+    }
+
+    fun cancelSessionReturn(sessionId: Long) {
+        alarmManager.cancel(
+            createPendingIntent(
+                sessionId,
+                GoHomeReceiver.ACTION_GO_HOME,
+                requestCodeSessionReturn(sessionId)
+            )
+        )
+    }
+
     private fun scheduleAt(taskId: Long, action: String, delayMs: Long, requestCode: Int) {
         val triggerAt = System.currentTimeMillis() + delayMs
         val pendingIntent = createPendingIntent(taskId, action, requestCode)
@@ -71,13 +92,17 @@ class GoHomeScheduler(private val context: Context) {
         private const val HIDE_DELAY_MS = 60_000L
         private const val RELAUNCH_DELAY_MS = 3_000L
         private const val HIDE_AGAIN_DELAY_MS = 2_000L
+        private const val SESSION_RETURN_DELAY_MS = 55_000L
 
         private const val REQUEST_HIDE_BASE = 500_000
         private const val REQUEST_RELAUNCH_BASE = 510_000
         private const val REQUEST_HIDE_AGAIN_BASE = 520_000
+        private const val REQUEST_SESSION_RETURN_BASE = 530_000
 
         fun requestCodeHide(taskId: Long): Int = REQUEST_HIDE_BASE + taskId.toInt()
         fun requestCodeRelaunch(taskId: Long): Int = REQUEST_RELAUNCH_BASE + taskId.toInt()
         fun requestCodeHideAgain(taskId: Long): Int = REQUEST_HIDE_AGAIN_BASE + taskId.toInt()
+        fun requestCodeSessionReturn(sessionId: Long): Int =
+            REQUEST_SESSION_RETURN_BASE + (sessionId % 10_000).toInt()
     }
 }

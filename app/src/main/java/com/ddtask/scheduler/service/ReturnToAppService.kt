@@ -8,8 +8,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
+import com.ddtask.scheduler.ReturnProxyActivity
 
 /**
  * 短暂前台服务，用于从后台（如通知监听）合法拉起主界面。
@@ -26,12 +26,11 @@ class ReturnToAppService : Service() {
         }
 
         startActivity(
-            Intent(this, MainActivity::class.java).apply {
+            Intent(this, ReturnProxyActivity::class.java).apply {
                 addFlags(
                     Intent.FLAG_ACTIVITY_NEW_TASK or
                         Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                        Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
                 )
             }
         )
