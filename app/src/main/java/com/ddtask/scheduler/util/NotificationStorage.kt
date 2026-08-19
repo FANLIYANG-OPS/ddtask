@@ -59,6 +59,39 @@ class NotificationStorage(context: Context) {
         get() = prefs.getBoolean(KEY_CLOSE_DINGTALK, false)
         set(value) = prefs.edit().putBoolean(KEY_CLOSE_DINGTALK, value).apply()
 
+    /** 邮件触发：轮询发件邮箱收件箱，不依赖 QQ/微信通知。 */
+    var emailTriggerEnabled: Boolean
+        get() = prefs.getBoolean(KEY_EMAIL_TRIGGER, false)
+        set(value) = prefs.edit().putBoolean(KEY_EMAIL_TRIGGER, value).apply()
+
+    var imapHost: String
+        get() = prefs.getString(KEY_IMAP_HOST, ImapHelper.resolveHost(smtpHost)).orEmpty()
+        set(value) = prefs.edit().putString(KEY_IMAP_HOST, value).apply()
+
+    var imapPort: Int
+        get() = prefs.getInt(KEY_IMAP_PORT, ImapHelper.defaultPort())
+        set(value) = prefs.edit().putInt(KEY_IMAP_PORT, value).apply()
+
+    var lastProcessedImapUid: Long
+        get() = prefs.getLong(KEY_LAST_IMAP_UID, 0L)
+        set(value) = prefs.edit().putLong(KEY_LAST_IMAP_UID, value).apply()
+
+    var lastEmailTriggerAt: Long
+        get() = prefs.getLong(KEY_LAST_EMAIL_TRIGGER_AT, 0L)
+        private set(value) = prefs.edit().putLong(KEY_LAST_EMAIL_TRIGGER_AT, value).apply()
+
+    var lastEmailTriggerSummary: String
+        get() = prefs.getString(KEY_LAST_EMAIL_TRIGGER_SUMMARY, "").orEmpty()
+        private set(value) = prefs.edit().putString(KEY_LAST_EMAIL_TRIGGER_SUMMARY, value).apply()
+
+    /** 同步 IMAP 地址（SMTP 变更后调用）。 */
+    fun syncImapFromSmtp() {
+        imapHost = ImapHelper.resolveHost(smtpHost)
+        if (imapPort !in 1..65535) {
+            imapPort = ImapHelper.defaultPort()
+        }
+    }
+
     var keywordsConfigured: Boolean
         get() = prefs.getBoolean(KEY_KEYWORDS_CONFIGURED, false)
         set(value) = prefs.edit().putBoolean(KEY_KEYWORDS_CONFIGURED, value).apply()
@@ -136,6 +169,11 @@ class NotificationStorage(context: Context) {
             .apply()
     }
 
+    fun recordEmailTrigger(summary: String) {
+        lastEmailTriggerAt = System.currentTimeMillis()
+        lastEmailTriggerSummary = summary
+    }
+
     companion object {
         private const val PREFS_NAME = "ddtask_notification"
         private const val KEY_ENABLED = "email_notify_enabled"
@@ -151,6 +189,12 @@ class NotificationStorage(context: Context) {
         private const val KEY_SUCCESS_KEYWORDS = "success_keywords"
         private const val KEY_RETURN_KEYWORDS = "return_keywords"
         private const val KEY_CLOSE_DINGTALK = "close_dingtalk_enabled"
+        private const val KEY_EMAIL_TRIGGER = "email_trigger_enabled"
+        private const val KEY_IMAP_HOST = "imap_host"
+        private const val KEY_IMAP_PORT = "imap_port"
+        private const val KEY_LAST_IMAP_UID = "last_imap_uid"
+        private const val KEY_LAST_EMAIL_TRIGGER_AT = "last_email_trigger_at"
+        private const val KEY_LAST_EMAIL_TRIGGER_SUMMARY = "last_email_trigger_summary"
         private const val KEY_KEYWORDS_CONFIGURED = "keywords_configured"
         private const val KEY_LAST_OPEN_AT = "last_open_at"
         private const val KEY_LAST_OPEN_SUMMARY = "last_open_summary"

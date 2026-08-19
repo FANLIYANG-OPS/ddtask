@@ -11,6 +11,7 @@ import com.ddtask.scheduler.fragment.TasksFragment
 import com.ddtask.scheduler.service.AlarmScheduler
 import com.ddtask.scheduler.ui.MainPagerAdapter
 import com.ddtask.scheduler.util.ClockInSessionManager
+import com.ddtask.scheduler.util.EmailPollingController
 import com.ddtask.scheduler.util.SettingsStorage
 
 /** 应用主界面：任务 / 通知 / 设置 三 Tab，首次进入时弹出权限向导。 */
@@ -36,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 
         settingsStorage = SettingsStorage(this)
         AlarmScheduler(this).rescheduleAll()
+        EmailPollingController.sync(this)
         setupViewPager()
         setupBottomNav()
         setupFab()

@@ -16,6 +16,7 @@ import com.ddtask.scheduler.databinding.FragmentSettingsHostBinding
 import com.ddtask.scheduler.util.ClockInDetector
 import com.ddtask.scheduler.util.ConfigManager
 import com.ddtask.scheduler.util.EmailConfigHelper
+import com.ddtask.scheduler.util.EmailPollingController
 import com.ddtask.scheduler.util.EmailSender
 import com.ddtask.scheduler.util.NotificationStorage
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -147,6 +148,7 @@ class SettingsHostFragment : Fragment() {
             port = binding.etSmtpPort.text?.toString()?.trim()?.toIntOrNull() ?: -1
         )
         if (!EmailConfigHelper.save(requireContext(), notificationStorage, form)) return
+        EmailPollingController.sync(requireContext())
         emailEditing = false
         updateEmailUi()
     }

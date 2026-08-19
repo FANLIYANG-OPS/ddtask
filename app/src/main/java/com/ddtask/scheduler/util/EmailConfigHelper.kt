@@ -53,6 +53,7 @@ object EmailConfigHelper {
         storage.senderPassword = form.password
         storage.smtpHost = form.host
         storage.smtpPort = form.port
+        storage.syncImapFromSmtp()
         Toast.makeText(context, R.string.email_settings_saved, Toast.LENGTH_SHORT).show()
         return true
     }

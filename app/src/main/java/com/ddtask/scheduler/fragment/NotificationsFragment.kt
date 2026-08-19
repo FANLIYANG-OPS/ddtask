@@ -16,6 +16,7 @@ import com.ddtask.scheduler.databinding.FragmentNotificationsBinding
 import com.ddtask.scheduler.util.BrightnessController
 import com.ddtask.scheduler.util.DingTalkLauncher
 import com.ddtask.scheduler.util.KeepScreenOverlay
+import com.ddtask.scheduler.util.EmailPollingController
 import com.ddtask.scheduler.util.NotificationAccess
 import com.ddtask.scheduler.util.NotificationStorage
 import com.ddtask.scheduler.util.SettingsStorage
@@ -57,6 +58,7 @@ class NotificationsFragment : Fragment() {
         syncScreenSettingsUi()
         updateLastOpenStatus()
         updateLastSentStatus()
+        updateEmailTriggerUi()
     }
 
     override fun onDestroyView() {
@@ -73,6 +75,17 @@ class NotificationsFragment : Fragment() {
                 return@setOnCheckedChangeListener
             }
             notificationStorage.autoOpenDingTalkEnabled = isChecked
+        }
+
+        binding.switchEmailTrigger.setOnCheckedChangeListener(null)
+        binding.switchEmailTrigger.isChecked = notificationStorage.emailTriggerEnabled
+        binding.switchEmailTrigger.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && !ensureEmailConfigured()) {
+                binding.switchEmailTrigger.isChecked = false
+                return@setOnCheckedChangeListener
+            }
+            notificationStorage.emailTriggerEnabled = isChecked
+            EmailPollingController.sync(requireContext())
         }
 
         binding.switchEmailNotify.setOnCheckedChangeListener(null)
@@ -155,9 +168,8 @@ class NotificationsFragment : Fragment() {
         return ensureListenerEnabled()
     }
 
-    /** 开启关闭钉钉前确认通知监听与邮件配置可用。 */
+    /** 开启关闭钉钉前确认邮件已配置（返回可通过通知或邮件触发）。 */
     private fun ensureCloseDingTalkReady(): Boolean {
-        if (!ensureListenerEnabled()) return false
         if (!notificationStorage.isConfigured()) {
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.email_config_required_title)
@@ -170,6 +182,19 @@ class NotificationsFragment : Fragment() {
             return false
         }
         return true
+    }
+
+    private fun ensureEmailConfigured(): Boolean {
+        if (notificationStorage.isConfigured()) return true
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.email_config_required_title)
+            .setMessage(R.string.email_config_required_message)
+            .setPositiveButton(R.string.go_settings) { _, _ ->
+                (activity as? MainActivity)?.openTab(MainActivity.TAB_SETTINGS)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+        return false
     }
 
     private fun updateDingTalkStatus() {
@@ -286,6 +311,29 @@ class NotificationsFragment : Fragment() {
             R.string.last_email_sent,
             time,
             notificationStorage.lastSentSummary
+        )
+    }
+
+    private fun updateEmailTriggerUi() {
+        val sender = notificationStorage.senderEmail
+        if (sender.isNotBlank() && notificationStorage.emailTriggerEnabled) {
+            binding.tvEmailTriggerAddress.visibility = View.VISIBLE
+            binding.tvEmailTriggerAddress.text = getString(R.string.email_trigger_address, sender)
+        } else {
+            binding.tvEmailTriggerAddress.visibility = View.GONE
+        }
+
+        val lastAt = notificationStorage.lastEmailTriggerAt
+        if (lastAt <= 0L) {
+            binding.tvLastEmailTrigger.visibility = View.GONE
+            return
+        }
+        val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(lastAt))
+        binding.tvLastEmailTrigger.visibility = View.VISIBLE
+        binding.tvLastEmailTrigger.text = getString(
+            R.string.last_email_trigger,
+            time,
+            notificationStorage.lastEmailTriggerSummary
         )
     }
 }

@@ -114,7 +114,14 @@
     <string name="permission_overlay_message">允许在其他应用上层显示，用于定时打开钉钉时保持屏幕常亮</string>
     <string name="permission_setup_recheck">重新检查权限</string>
     <string name="auto_open_dingtalk_enabled">手动打卡</string>
-    <string name="auto_open_dingtalk_enabled_desc">监听短信、QQ 等任意应用通知，匹配关键字后打开钉钉</string>
+    <string name="auto_open_dingtalk_enabled_desc">监听短信、QQ 等通知，匹配关键字后打开钉钉（第三方 App 可能被系统杀后台）</string>
+    <string name="email_trigger_enabled">邮件触发打卡</string>
+    <string name="email_trigger_enabled_desc">DDTask 前台轮询发件邮箱收件箱，收到含关键字的邮件即触发，不依赖 QQ/微信</string>
+    <string name="email_trigger_address">请向 %1$s 发送含关键字的邮件（主题或正文均可）</string>
+    <string name="last_email_trigger">上次邮件触发：%1$s\n内容：%2$s</string>
+    <string name="email_polling_channel">邮件监听</string>
+    <string name="email_polling_title">邮件触发监听中</string>
+    <string name="email_polling_desc">正在轮询收件箱以接收打卡指令</string>
     <string name="trigger_keywords_hint">打开钉钉关键字（每行一个）</string>
     <string name="trigger_keywords_help">默认：上班打卡、下班打卡。支持短信、QQ 等第三方通知。</string>
     <string name="success_keywords_hint">打卡成功关键字（每行一个）</string>

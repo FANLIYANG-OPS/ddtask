@@ -18,10 +18,13 @@ data class AppConfigExport(
     val triggerKeywords: String = "",
     val successKeywords: String = "",
     val returnKeywords: String = "",
-    val keywordsConfigured: Boolean = false
+    val keywordsConfigured: Boolean = false,
+    val emailTriggerEnabled: Boolean = false,
+    val imapHost: String = "",
+    val imapPort: Int = 993
 ) {
     companion object {
-        /** v1 导出不含新字段；v2 起增加关闭钉钉与返回关键字。 */
-        const val CURRENT_VERSION = 2
+        /** v3 起增加邮件触发打卡。 */
+        const val CURRENT_VERSION = 3
     }
 }

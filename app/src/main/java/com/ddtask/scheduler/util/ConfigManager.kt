@@ -3,6 +3,7 @@ package com.ddtask.scheduler.util
 import android.content.Context
 import com.ddtask.scheduler.model.AppConfigExport
 import com.ddtask.scheduler.service.AlarmScheduler
+import com.ddtask.scheduler.util.EmailPollingController
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
@@ -34,7 +35,10 @@ class ConfigManager(private val context: Context) {
             triggerKeywords = notificationStorage.triggerKeywords,
             successKeywords = notificationStorage.successKeywords,
             returnKeywords = notificationStorage.returnKeywords,
-            keywordsConfigured = notificationStorage.keywordsConfigured
+            keywordsConfigured = notificationStorage.keywordsConfigured,
+            emailTriggerEnabled = notificationStorage.emailTriggerEnabled,
+            imapHost = notificationStorage.imapHost,
+            imapPort = notificationStorage.imapPort
         )
         return gson.toJson(config)
     }
@@ -110,8 +114,19 @@ class ConfigManager(private val context: Context) {
             ClockInDetector.defaultReturnKeywordsText()
         }
         notificationStorage.keywordsConfigured = keywordsConfigured
+        if (config.version >= 3) {
+            notificationStorage.emailTriggerEnabled = config.emailTriggerEnabled
+            notificationStorage.imapHost = config.imapHost.ifBlank {
+                ImapHelper.resolveHost(notificationStorage.smtpHost)
+            }
+            notificationStorage.imapPort = config.imapPort.takeIf { it in 1..65535 }
+                ?: ImapHelper.defaultPort()
+        } else {
+            notificationStorage.syncImapFromSmtp()
+        }
 
         alarmScheduler.rescheduleAll()
+        EmailPollingController.sync(context)
     }
 
     private fun List<com.ddtask.scheduler.model.ScheduledTask>?.orEmpty() = this ?: emptyList()
