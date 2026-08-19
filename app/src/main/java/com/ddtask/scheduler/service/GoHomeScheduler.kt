@@ -6,7 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.ddtask.scheduler.receiver.GoHomeReceiver
+import com.ddtask.scheduler.util.IntentExtras
 import com.ddtask.scheduler.util.PendingIntentCompat
+import com.ddtask.scheduler.util.PendingIntentRequestCodes
+import com.ddtask.scheduler.util.TimeConstants
 
 /**
  * 定时打开钉钉后的延迟操作调度。
@@ -78,7 +81,7 @@ class GoHomeScheduler(private val context: Context) {
     private fun createPendingIntent(taskId: Long, action: String, requestCode: Int): PendingIntent {
         val intent = Intent(context, GoHomeReceiver::class.java).apply {
             this.action = action
-            putExtra(GoHomeReceiver.EXTRA_TASK_ID, taskId)
+            putExtra(IntentExtras.TASK_ID, taskId)
         }
         return PendingIntent.getBroadcast(
             context,
@@ -89,20 +92,19 @@ class GoHomeScheduler(private val context: Context) {
     }
 
     companion object {
-        private const val HIDE_DELAY_MS = 60_000L
-        private const val RELAUNCH_DELAY_MS = 3_000L
-        private const val HIDE_AGAIN_DELAY_MS = 2_000L
-        private const val SESSION_RETURN_DELAY_MS = 60_000L
+        private const val HIDE_DELAY_MS = TimeConstants.ONE_MINUTE_MS
+        private const val RELAUNCH_DELAY_MS = 3 * TimeConstants.ONE_SECOND_MS
+        private const val HIDE_AGAIN_DELAY_MS = 2 * TimeConstants.ONE_SECOND_MS
+        private const val SESSION_RETURN_DELAY_MS = TimeConstants.ONE_MINUTE_MS
 
-        private const val REQUEST_HIDE_BASE = 500_000
-        private const val REQUEST_RELAUNCH_BASE = 510_000
-        private const val REQUEST_HIDE_AGAIN_BASE = 520_000
-        private const val REQUEST_SESSION_RETURN_BASE = 530_000
-
-        fun requestCodeHide(taskId: Long): Int = REQUEST_HIDE_BASE + taskId.toInt()
-        fun requestCodeRelaunch(taskId: Long): Int = REQUEST_RELAUNCH_BASE + taskId.toInt()
-        fun requestCodeHideAgain(taskId: Long): Int = REQUEST_HIDE_AGAIN_BASE + taskId.toInt()
+        fun requestCodeHide(taskId: Long): Int =
+            PendingIntentRequestCodes.GO_HOME_HIDE_BASE + taskId.toInt()
+        fun requestCodeRelaunch(taskId: Long): Int =
+            PendingIntentRequestCodes.GO_HOME_RELAUNCH_BASE + taskId.toInt()
+        fun requestCodeHideAgain(taskId: Long): Int =
+            PendingIntentRequestCodes.GO_HOME_HIDE_AGAIN_BASE + taskId.toInt()
         fun requestCodeSessionReturn(sessionId: Long): Int =
-            REQUEST_SESSION_RETURN_BASE + (sessionId % 10_000).toInt()
+            PendingIntentRequestCodes.GO_HOME_SESSION_RETURN_BASE +
+                (sessionId % PendingIntentRequestCodes.SESSION_RETURN_CODE_MODULO).toInt()
     }
 }

@@ -9,7 +9,9 @@ import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.model.ScheduledTask
 import com.ddtask.scheduler.receiver.AlarmReceiver
 import com.ddtask.scheduler.util.ExactAlarmHelper
+import com.ddtask.scheduler.util.IntentExtras
 import com.ddtask.scheduler.util.PendingIntentCompat
+import com.ddtask.scheduler.util.PendingIntentRequestCodes
 import com.ddtask.scheduler.util.ScheduleCalculator
 import com.ddtask.scheduler.util.TaskStorage
 
@@ -49,7 +51,7 @@ class AlarmScheduler(private val context: Context) {
                 try {
                     val showIntent = PendingIntent.getActivity(
                         appContext,
-                        REQUEST_SHOW + task.id.toInt(),
+                        PendingIntentRequestCodes.ALARM_SHOW_BASE + task.id.toInt(),
                         Intent(appContext, MainActivity::class.java),
                         PendingIntentCompat.updateCurrentImmutable()
                     )
@@ -85,18 +87,14 @@ class AlarmScheduler(private val context: Context) {
     private fun createPendingIntent(taskId: Long): PendingIntent {
         val intent = Intent(appContext, AlarmReceiver::class.java).apply {
             action = AlarmReceiver.ACTION_ALARM
-            putExtra(AlarmReceiver.EXTRA_TASK_ID, taskId)
+            putExtra(IntentExtras.TASK_ID, taskId)
         }
         return PendingIntent.getBroadcast(
             appContext,
-            REQUEST_ALARM_BASE + taskId.toInt(),
+            PendingIntentRequestCodes.ALARM_BASE + taskId.toInt(),
             intent,
             PendingIntentCompat.updateCurrentImmutable()
         )
     }
 
-    companion object {
-        private const val REQUEST_ALARM_BASE = 100_000
-        private const val REQUEST_SHOW = 200_000
-    }
 }

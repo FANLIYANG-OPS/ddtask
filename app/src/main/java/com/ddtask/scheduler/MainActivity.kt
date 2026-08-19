@@ -21,6 +21,8 @@ class MainActivity : AppCompatActivity() {
         const val TAB_TASKS = 0
         const val TAB_NOTIFICATIONS = 1
         const val TAB_SETTINGS = 2
+        const val TAB_COUNT = 3
+        const val VIEWPAGER_FRAGMENT_TAG_TASKS = "f0"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -65,12 +67,12 @@ class MainActivity : AppCompatActivity() {
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 val menuItemId = when (position) {
-                    0 -> R.id.nav_tasks
-                    1 -> R.id.nav_notifications
+                    TAB_TASKS -> R.id.nav_tasks
+                    TAB_NOTIFICATIONS -> R.id.nav_notifications
                     else -> R.id.nav_settings
                 }
                 binding.bottomNav.menu.findItem(menuItemId)?.isChecked = true
-                binding.fabAdd.visibility = if (position == 0) View.VISIBLE else View.GONE
+                binding.fabAdd.visibility = if (position == TAB_TASKS) View.VISIBLE else View.GONE
             }
         })
     }
@@ -78,9 +80,9 @@ class MainActivity : AppCompatActivity() {
     private fun setupBottomNav() {
         binding.bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_tasks -> binding.viewPager.setCurrentItem(0, false)
-                R.id.nav_notifications -> binding.viewPager.setCurrentItem(1, false)
-                R.id.nav_settings -> binding.viewPager.setCurrentItem(2, false)
+                R.id.nav_tasks -> binding.viewPager.setCurrentItem(TAB_TASKS, false)
+                R.id.nav_notifications -> binding.viewPager.setCurrentItem(TAB_NOTIFICATIONS, false)
+                R.id.nav_settings -> binding.viewPager.setCurrentItem(TAB_SETTINGS, false)
             }
             true
         }
@@ -88,7 +90,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupFab() {
         binding.fabAdd.setOnClickListener {
-            (supportFragmentManager.findFragmentByTag("f0") as? TasksFragment)
+            (supportFragmentManager.findFragmentByTag(VIEWPAGER_FRAGMENT_TAG_TASKS) as? TasksFragment)
                 ?.showAddTaskDialog()
         }
     }

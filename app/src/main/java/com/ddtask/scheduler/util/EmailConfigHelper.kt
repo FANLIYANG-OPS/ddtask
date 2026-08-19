@@ -43,7 +43,7 @@ object EmailConfigHelper {
             Toast.makeText(context, R.string.smtp_host_required, Toast.LENGTH_SHORT).show()
             return false
         }
-        if (form.port !in 1..65535) {
+        if (form.port !in EmailDefaults.MIN_PORT..EmailDefaults.MAX_PORT) {
             Toast.makeText(context, R.string.smtp_port_invalid, Toast.LENGTH_SHORT).show()
             return false
         }

@@ -35,8 +35,8 @@ class KeepScreenOverlay(private val context: Context) {
         }
 
         val params = WindowManager.LayoutParams(
-            1,
-            1,
+            OVERLAY_WIDTH_PX,
+            OVERLAY_HEIGHT_PX,
             type,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
@@ -45,8 +45,8 @@ class KeepScreenOverlay(private val context: Context) {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = 0
-            y = 0
+            x = OVERLAY_POSITION
+            y = OVERLAY_POSITION
         }
 
         windowManager?.addView(overlayView, params)
@@ -61,5 +61,11 @@ class KeepScreenOverlay(private val context: Context) {
         }
         overlayView = null
         windowManager = null
+    }
+
+    companion object {
+        private const val OVERLAY_WIDTH_PX = 1
+        private const val OVERLAY_HEIGHT_PX = 1
+        private const val OVERLAY_POSITION = 0
     }
 }

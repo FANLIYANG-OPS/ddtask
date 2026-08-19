@@ -51,19 +51,22 @@ object EmailReceiver {
             val imapHost = storage.resolvedImapHost()
             val imapPort = storage.resolvedImapPort()
             val props = Properties().apply {
-                put("mail.store.protocol", "imaps")
-                put("mail.imaps.host", imapHost)
-                put("mail.imaps.port", imapPort.toString())
-                put("mail.imaps.ssl.enable", "true")
-                put("mail.imaps.connectiontimeout", "15000")
-                put("mail.imaps.timeout", "15000")
+                put(MailConstants.PROP_STORE_PROTOCOL, MailConstants.STORE_PROTOCOL_IMAPS)
+                put(MailConstants.PROP_IMAPS_HOST, imapHost)
+                put(MailConstants.PROP_IMAPS_PORT, imapPort.toString())
+                put(MailConstants.PROP_IMAPS_SSL_ENABLE, MailConstants.PROP_VALUE_TRUE)
+                put(
+                    MailConstants.PROP_IMAPS_CONNECTION_TIMEOUT,
+                    MailConstants.IMAP_CONNECTION_TIMEOUT_MS.toString()
+                )
+                put(MailConstants.PROP_IMAPS_TIMEOUT, MailConstants.IMAP_READ_TIMEOUT_MS.toString())
             }
             val session = Session.getInstance(props)
-            store = session.getStore("imaps")
+            store = session.getStore(MailConstants.STORE_PROTOCOL_IMAPS)
             store.connect(imapHost, imapPort, storage.senderEmail, storage.senderPassword)
             sendImapIdIfRequired(store, imapHost, storage.senderEmail)
 
-            folder = store.getFolder("INBOX")
+            folder = store.getFolder(MailConstants.IMAP_FOLDER_INBOX)
             folder.open(Folder.READ_WRITE)
 
             val uidFolder = folder as UIDFolder
@@ -113,10 +116,10 @@ object EmailReceiver {
         if (!ImapHelper.requiresImapId(imapHost)) return
         if (store !is IMAPStore) return
         val idParams = hashMapOf(
-            "name" to "DDTask",
-            "version" to BuildConfig.VERSION_NAME,
-            "vendor" to "com.ddtask.scheduler",
-            "support-email" to supportEmail
+            MailConstants.IMAP_ID_KEY_NAME to MailConstants.IMAP_ID_APP_NAME,
+            MailConstants.IMAP_ID_KEY_VERSION to BuildConfig.VERSION_NAME,
+            MailConstants.IMAP_ID_KEY_VENDOR to MailConstants.IMAP_ID_VENDOR,
+            MailConstants.IMAP_ID_KEY_SUPPORT_EMAIL to supportEmail
         )
         store.id(idParams)
     }

@@ -8,6 +8,7 @@ import com.ddtask.scheduler.LaunchProxyActivity
 import com.ddtask.scheduler.service.AlarmScheduler
 import com.ddtask.scheduler.service.GoHomeScheduler
 import com.ddtask.scheduler.service.ScreenControlService
+import com.ddtask.scheduler.util.IntentExtras
 import com.ddtask.scheduler.util.SettingsStorage
 import com.ddtask.scheduler.util.TaskStorage
 
@@ -15,7 +16,7 @@ import com.ddtask.scheduler.util.TaskStorage
 class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val taskId = intent.getLongExtra(EXTRA_TASK_ID, -1L)
+        val taskId = intent.getLongExtra(IntentExtras.TASK_ID, IntentExtras.INVALID_TASK_ID)
         if (taskId < 0) return
         if (intent.action != null && intent.action != ACTION_ALARM) return
 
@@ -49,6 +50,5 @@ class AlarmReceiver : BroadcastReceiver() {
 
     companion object {
         const val ACTION_ALARM = "com.ddtask.scheduler.ACTION_ALARM"
-        const val EXTRA_TASK_ID = "extra_task_id"
     }
 }

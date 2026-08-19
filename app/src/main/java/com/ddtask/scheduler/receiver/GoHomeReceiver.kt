@@ -37,6 +37,5 @@ class GoHomeReceiver : BroadcastReceiver() {
     companion object {
         const val ACTION_GO_HOME = "com.ddtask.scheduler.ACTION_GO_HOME"
         const val ACTION_RELAUNCH_DINGTALK = "com.ddtask.scheduler.ACTION_RELAUNCH_DINGTALK"
-        const val EXTRA_TASK_ID = "extra_task_id"
     }
 }

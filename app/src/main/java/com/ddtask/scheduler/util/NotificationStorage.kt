@@ -24,11 +24,11 @@ class NotificationStorage(context: Context) {
         set(value) = prefs.edit().putString(KEY_PASSWORD, value).apply()
 
     var smtpHost: String
-        get() = prefs.getString(KEY_SMTP_HOST, DEFAULT_SMTP_HOST).orEmpty()
+        get() = prefs.getString(KEY_SMTP_HOST, EmailDefaults.DEFAULT_SMTP_HOST).orEmpty()
         set(value) = prefs.edit().putString(KEY_SMTP_HOST, value).apply()
 
     var smtpPort: Int
-        get() = prefs.getInt(KEY_SMTP_PORT, DEFAULT_SMTP_PORT)
+        get() = prefs.getInt(KEY_SMTP_PORT, EmailDefaults.DEFAULT_SMTP_PORT)
         set(value) = prefs.edit().putInt(KEY_SMTP_PORT, value).apply()
 
     var lastSentAt: Long
@@ -212,12 +212,10 @@ class NotificationStorage(context: Context) {
         private const val KEY_KEYWORDS_CONFIGURED = "keywords_configured"
         private const val KEY_LAST_OPEN_AT = "last_open_at"
         private const val KEY_LAST_OPEN_SUMMARY = "last_open_summary"
-        private const val DEFAULT_SMTP_HOST = "smtp.qq.com"
-        private const val DEFAULT_SMTP_PORT = 465
-        private const val DUPLICATE_INTERVAL_MS = 5 * 60 * 1000L
-        private const val OPEN_DINGTALK_INTERVAL_MS = 60 * 1000L
-        private const val MANUAL_RETURN_WINDOW_MS = 5 * 60 * 1000L
-        private const val RETURN_DEBOUNCE_MS = 2 * 1000L
+        private const val DUPLICATE_INTERVAL_MS = 5 * TimeConstants.ONE_MINUTE_MS
+        private const val OPEN_DINGTALK_INTERVAL_MS = TimeConstants.ONE_MINUTE_MS
+        private const val MANUAL_RETURN_WINDOW_MS = 5 * TimeConstants.ONE_MINUTE_MS
+        private const val RETURN_DEBOUNCE_MS = 2 * TimeConstants.ONE_SECOND_MS
         private const val KEY_LAST_RETURN_AT = "last_return_at"
         private const val KEY_RETURNED_FOR_OPEN = "returned_for_open"
     }

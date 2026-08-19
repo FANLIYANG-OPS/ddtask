@@ -124,5 +124,5 @@ object AppNavigator {
         }
     }
 
-    private const val REQUEST_RETURN = 300_001
+    private const val REQUEST_RETURN = PendingIntentRequestCodes.RETURN_TO_MAIN
 }

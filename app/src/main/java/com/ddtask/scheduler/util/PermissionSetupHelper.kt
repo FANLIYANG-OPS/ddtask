@@ -16,7 +16,7 @@ import com.ddtask.scheduler.R
 /** 汇总应用运行所需的权限项，并提供跳转到对应系统设置页的入口。 */
 object PermissionSetupHelper {
 
-    const val REQUEST_POST_NOTIFICATIONS = 1001
+    const val REQUEST_POST_NOTIFICATIONS = ActivityRequestCodes.POST_NOTIFICATIONS
 
     data class Step(
         val id: String,

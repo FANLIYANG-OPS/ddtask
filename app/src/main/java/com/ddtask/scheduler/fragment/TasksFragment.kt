@@ -69,9 +69,9 @@ class TasksFragment : Fragment() {
                 )
             ) { _, which ->
                 when (which) {
-                    0 -> showTaskDialog(null)
-                    1 -> applyTemplate(TaskTemplate.SUMMER, R.string.template_summer)
-                    2 -> applyTemplate(TaskTemplate.WINTER, R.string.template_winter)
+                    TEMPLATE_INDEX_CUSTOM -> showTaskDialog(null)
+                    TEMPLATE_INDEX_SUMMER -> applyTemplate(TaskTemplate.SUMMER, R.string.template_summer)
+                    TEMPLATE_INDEX_WINTER -> applyTemplate(TaskTemplate.WINTER, R.string.template_winter)
                 }
             }
             .show()
@@ -139,8 +139,8 @@ class TasksFragment : Fragment() {
 
     private fun showTaskDialog(existingTask: ScheduledTask?) {
         val dialogBinding = DialogAddTaskBinding.inflate(layoutInflater)
-        var selectedHour = existingTask?.hour ?: 9
-        var selectedMinute = existingTask?.minute ?: 0
+        var selectedHour = existingTask?.hour ?: DEFAULT_TASK_HOUR
+        var selectedMinute = existingTask?.minute ?: DEFAULT_TASK_MINUTE
         val isEdit = existingTask != null
 
         val repeatModeOptions = listOf(
@@ -206,7 +206,7 @@ class TasksFragment : Fragment() {
             .create()
 
         dialog.setOnShowListener {
-            val maxHeight = (resources.displayMetrics.heightPixels * 0.75).toInt()
+            val maxHeight = (resources.displayMetrics.heightPixels * DIALOG_MAX_HEIGHT_RATIO).toInt()
             dialogBinding.root.post {
                 if (dialogBinding.root.height > maxHeight) {
                     dialogBinding.root.layoutParams.height = maxHeight
@@ -278,6 +278,16 @@ class TasksFragment : Fragment() {
         picker.addOnPositiveButtonClickListener {
             onSelected(picker.hour, picker.minute)
         }
-        picker.show(parentFragmentManager, "time_picker")
+        picker.show(parentFragmentManager, TAG_TIME_PICKER)
+    }
+
+    companion object {
+        private const val DEFAULT_TASK_HOUR = 9
+        private const val DEFAULT_TASK_MINUTE = 0
+        private const val DIALOG_MAX_HEIGHT_RATIO = 0.75
+        private const val TEMPLATE_INDEX_CUSTOM = 0
+        private const val TEMPLATE_INDEX_SUMMER = 1
+        private const val TEMPLATE_INDEX_WINTER = 2
+        private const val TAG_TIME_PICKER = "time_picker"
     }
 }

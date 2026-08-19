@@ -97,7 +97,7 @@ object EmailSender {
     }
 
     private fun nowText(): String {
-        return SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+        return SimpleDateFormat(DateFormats.DATETIME, Locale.getDefault()).format(Date())
     }
 
     private fun sendAsync(
@@ -123,15 +123,18 @@ object EmailSender {
         }
 
         val props = Properties().apply {
-            put("mail.smtp.host", storage.smtpHost)
-            put("mail.smtp.port", storage.smtpPort.toString())
-            put("mail.smtp.auth", "true")
-            if (storage.smtpPort == 465) {
-                put("mail.smtp.socketFactory.port", "465")
-                put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory")
-                put("mail.smtp.socketFactory.fallback", "false")
+            put(MailConstants.PROP_SMTP_HOST, storage.smtpHost)
+            put(MailConstants.PROP_SMTP_PORT, storage.smtpPort.toString())
+            put(MailConstants.PROP_SMTP_AUTH, MailConstants.PROP_VALUE_TRUE)
+            if (storage.smtpPort == EmailDefaults.DEFAULT_SMTP_PORT) {
+                put(
+                    MailConstants.PROP_SMTP_SOCKET_FACTORY_PORT,
+                    EmailDefaults.DEFAULT_SMTP_PORT.toString()
+                )
+                put(MailConstants.PROP_SMTP_SOCKET_FACTORY_CLASS, MailConstants.SSL_SOCKET_FACTORY_CLASS)
+                put(MailConstants.PROP_SMTP_SOCKET_FACTORY_FALLBACK, MailConstants.PROP_VALUE_FALSE)
             } else {
-                put("mail.smtp.starttls.enable", "true")
+                put(MailConstants.PROP_SMTP_STARTTLS_ENABLE, MailConstants.PROP_VALUE_TRUE)
             }
         }
 
@@ -147,8 +150,8 @@ object EmailSender {
                 Message.RecipientType.TO,
                 InternetAddress.parse(storage.recipientEmail)
             )
-            setSubject(subject, "UTF-8")
-            setText(body, "UTF-8")
+            setSubject(subject, MailConstants.CHARSET_UTF8)
+            setText(body, MailConstants.CHARSET_UTF8)
         }
 
         Transport.send(message)

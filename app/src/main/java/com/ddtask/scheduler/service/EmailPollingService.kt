@@ -15,7 +15,9 @@ import com.ddtask.scheduler.R
 import com.ddtask.scheduler.util.ClockInActionHandler
 import com.ddtask.scheduler.util.ClockInSource
 import com.ddtask.scheduler.util.EmailReceiver
+import com.ddtask.scheduler.util.NotificationIds
 import com.ddtask.scheduler.util.NotificationStorage
+import com.ddtask.scheduler.util.TimeConstants
 
 /**
  * 前台服务：定期 IMAP 轮询发件邮箱收件箱。
@@ -53,7 +55,7 @@ class EmailPollingService : Service() {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForeground(NOTIFICATION_ID, createNotification())
+            startForeground(NotificationIds.EMAIL_POLLING, createNotification())
         }
         startPolling()
         return START_STICKY
@@ -128,7 +130,6 @@ class EmailPollingService : Service() {
     companion object {
         const val ACTION_STOP = "com.ddtask.scheduler.STOP_EMAIL_POLLING"
         private const val CHANNEL_ID = "email_polling"
-        private const val NOTIFICATION_ID = 2003
-        private const val POLL_INTERVAL_MS = 30_000L
+        private const val POLL_INTERVAL_MS = 30 * TimeConstants.ONE_SECOND_MS
     }
 }

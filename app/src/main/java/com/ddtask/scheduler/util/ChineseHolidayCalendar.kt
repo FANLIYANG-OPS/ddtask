@@ -52,7 +52,9 @@ class ChineseHolidayCalendar private constructor(
     )
 
     companion object {
-        private val DATE_FORMAT = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        private val DATE_FORMAT = SimpleDateFormat(DateFormats.DATE_ONLY, Locale.US)
+        private const val ASSET_HOLIDAYS_JSON = "chinese_holidays.json"
+        private const val HOLIDAY_DATE_RANGE_SIZE = 2
 
         @Volatile
         private var instance: ChineseHolidayCalendar? = null
@@ -64,7 +66,7 @@ class ChineseHolidayCalendar private constructor(
         }
 
         private fun load(context: Context): ChineseHolidayCalendar {
-            val json = context.assets.open("chinese_holidays.json")
+            val json = context.assets.open(ASSET_HOLIDAYS_JSON)
                 .bufferedReader()
                 .use { it.readText() }
             val data = Gson().fromJson(json, HolidayData::class.java)
@@ -76,7 +78,7 @@ class ChineseHolidayCalendar private constructor(
             data.years.forEach { (yearStr, yearData) ->
                 years.add(yearStr.toInt())
                 yearData.holidays.forEach { range ->
-                    if (range.size == 2) {
+                    if (range.size == HOLIDAY_DATE_RANGE_SIZE) {
                         holidaySet.addAll(expandDateRange(range[0], range[1]))
                     }
                 }

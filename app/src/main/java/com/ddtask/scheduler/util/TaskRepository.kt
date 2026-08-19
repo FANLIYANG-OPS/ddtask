@@ -45,7 +45,7 @@ class TaskRepository(context: Context) {
 
     fun list(): List<ScheduledTask> {
         return storage.getAll().sortedWith(
-            compareBy({ it.hour * 60 + it.minute }, { it.id })
+            compareBy({ it.hour * TimeConstants.MINUTES_PER_HOUR + it.minute }, { it.id })
         )
     }
 

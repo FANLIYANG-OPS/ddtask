@@ -6,11 +6,9 @@ import android.content.Intent
 /** 检测钉钉是否安装并通过 Launcher Intent 启动。 */
 object DingTalkLauncher {
 
-    const val PACKAGE_NAME = "com.alibaba.android.rimet"
-
     fun isInstalled(context: Context): Boolean {
         return try {
-            context.packageManager.getPackageInfo(PACKAGE_NAME, 0)
+            context.packageManager.getPackageInfo(ClockInDetector.DINGTALK_PACKAGE, 0)
             true
         } catch (_: Exception) {
             false
@@ -19,7 +17,7 @@ object DingTalkLauncher {
 
     fun launch(context: Context): Boolean {
         if (!isInstalled(context)) return false
-        val launchIntent = context.packageManager.getLaunchIntentForPackage(PACKAGE_NAME)
+        val launchIntent = context.packageManager.getLaunchIntentForPackage(ClockInDetector.DINGTALK_PACKAGE)
             ?: return false
         launchIntent.addFlags(
             Intent.FLAG_ACTIVITY_NEW_TASK or

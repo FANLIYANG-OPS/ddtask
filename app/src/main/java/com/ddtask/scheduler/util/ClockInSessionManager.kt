@@ -41,7 +41,7 @@ class ClockInSessionManager(private val context: Context) {
     fun isActive(): Boolean {
         val start = prefs.getLong(KEY_SESSION_START, 0L)
         if (start <= 0L) return false
-        return System.currentTimeMillis() - start < SESSION_TIMEOUT_MS
+        return System.currentTimeMillis() - start < TimeConstants.ONE_MINUTE_MS
     }
 
     /** 会话尚未结束（含 1 分钟超时后、清理前的短暂窗口）。 */
@@ -70,7 +70,7 @@ class ClockInSessionManager(private val context: Context) {
         if (notificationStorage.returnedForCurrentOpen) return
         if (!hasOpenSession() && !notificationStorage.isWithinManualReturnWindow()) return
         val detail = prefs.getString(KEY_PENDING_RETURN_DETAIL, null)
-            ?: "已自动返回 DDTask"
+            ?: MSG_AUTO_RETURNED
         if (hasOpenSession()) {
             markReturned()
         }
@@ -90,13 +90,13 @@ class ClockInSessionManager(private val context: Context) {
             ) {
                 prefs.edit().putBoolean(KEY_CLOCK_IN_EMAIL_SENT, true).apply()
                 EmailSender.sendClockInFailure(appContext, triggerSummary) { success, _ ->
-                    if (success) notificationStorage.recordEmailSent("打卡失败（超时）")
+                    if (success) notificationStorage.recordEmailSent(MSG_EMAIL_CLOCK_IN_FAILURE)
                 }
             }
         }
 
         if (!prefs.getBoolean(KEY_RETURNED, false)) {
-            performReturn("会话超时（1分钟），自动返回 DDTask")
+            performReturn(MSG_SESSION_TIMEOUT_RETURN)
         }
 
         mainHandler.postDelayed({
@@ -108,7 +108,7 @@ class ClockInSessionManager(private val context: Context) {
             ) {
                 prefs.edit().putBoolean(KEY_RETURN_EMAIL_SENT, true).apply()
                 EmailSender.sendReturnFailure(appContext, triggerSummary) { success, _ ->
-                    if (success) notificationStorage.recordEmailSent("返回 DDTask 失败（超时）")
+                    if (success) notificationStorage.recordEmailSent(MSG_EMAIL_RETURN_FAILURE)
                 }
             }
             clearSession()
@@ -145,13 +145,13 @@ class ClockInSessionManager(private val context: Context) {
         if (prefs.getBoolean(KEY_RETURN_EMAIL_SENT, false)) return
         prefs.edit().putBoolean(KEY_RETURN_EMAIL_SENT, true).apply()
         EmailSender.sendReturnSuccess(appContext, detail) { success, _ ->
-            if (success) notificationStorage.recordEmailSent("已返回 DDTask")
+            if (success) notificationStorage.recordEmailSent(MSG_EMAIL_RETURN_SUCCESS)
         }
     }
 
     private fun scheduleTimeout(sessionId: Long) {
         cancelTimeout()
-        val triggerAt = sessionId + SESSION_TIMEOUT_MS
+        val triggerAt = sessionId + TimeConstants.ONE_MINUTE_MS
         val pendingIntent = createTimeoutPendingIntent(sessionId)
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -181,7 +181,7 @@ class ClockInSessionManager(private val context: Context) {
             putExtra(ClockInSessionReceiver.EXTRA_SESSION_ID, sessionId)
         }
         val flags = PendingIntentCompat.updateCurrentImmutable()
-        return PendingIntent.getBroadcast(appContext, REQUEST_CODE_TIMEOUT, intent, flags)
+        return PendingIntent.getBroadcast(appContext, PendingIntentRequestCodes.SESSION_TIMEOUT, intent, flags)
     }
 
     private fun clearSession() {
@@ -212,8 +212,11 @@ class ClockInSessionManager(private val context: Context) {
         private const val KEY_RETURN_EMAIL_SENT = "return_email_sent"
         private const val KEY_TRIGGER_SUMMARY = "trigger_summary"
         private const val KEY_PENDING_RETURN_DETAIL = "pending_return_detail"
-        private const val SESSION_TIMEOUT_MS = 60_000L
-        private const val SESSION_FINALIZE_DELAY_MS = 4_000L
-        private const val REQUEST_CODE_TIMEOUT = 600_000
+        private const val SESSION_FINALIZE_DELAY_MS = 4 * TimeConstants.ONE_SECOND_MS
+        private const val MSG_AUTO_RETURNED = "已自动返回 DDTask"
+        private const val MSG_SESSION_TIMEOUT_RETURN = "会话超时（1分钟），自动返回 DDTask"
+        private const val MSG_EMAIL_CLOCK_IN_FAILURE = "打卡失败（超时）"
+        private const val MSG_EMAIL_RETURN_FAILURE = "返回 DDTask 失败（超时）"
+        private const val MSG_EMAIL_RETURN_SUCCESS = "已返回 DDTask"
     }
 }

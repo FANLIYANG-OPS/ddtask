@@ -14,6 +14,7 @@ import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
 import com.ddtask.scheduler.databinding.FragmentNotificationsBinding
 import com.ddtask.scheduler.util.BrightnessController
+import com.ddtask.scheduler.util.DateFormats
 import com.ddtask.scheduler.util.DingTalkLauncher
 import com.ddtask.scheduler.util.KeepScreenOverlay
 import com.ddtask.scheduler.util.EmailPollingController
@@ -293,7 +294,7 @@ class NotificationsFragment : Fragment() {
             binding.tvLastOpen.visibility = View.GONE
             return
         }
-        val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(lastOpenAt))
+        val time = SimpleDateFormat(DateFormats.DATETIME, Locale.getDefault()).format(Date(lastOpenAt))
         binding.tvLastOpen.visibility = View.VISIBLE
         binding.tvLastOpen.text = getString(
             R.string.last_open_dingtalk,
@@ -308,7 +309,7 @@ class NotificationsFragment : Fragment() {
             binding.tvLastSent.visibility = View.GONE
             return
         }
-        val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(lastSentAt))
+        val time = SimpleDateFormat(DateFormats.DATETIME, Locale.getDefault()).format(Date(lastSentAt))
         binding.tvLastSent.visibility = View.VISIBLE
         binding.tvLastSent.text = getString(
             R.string.last_email_sent,
@@ -333,7 +334,7 @@ class NotificationsFragment : Fragment() {
             binding.tvLastEmailTrigger.visibility = View.GONE
             return
         }
-        val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(lastAt))
+        val time = SimpleDateFormat(DateFormats.DATETIME, Locale.getDefault()).format(Date(lastAt))
         binding.tvLastEmailTrigger.visibility = View.VISIBLE
         binding.tvLastEmailTrigger.text = getString(
             R.string.last_email_trigger,
@@ -348,7 +349,7 @@ class NotificationsFragment : Fragment() {
             binding.tvEmailPollStatus.visibility = View.GONE
             return
         }
-        val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(pollAt))
+        val time = SimpleDateFormat(DateFormats.TIME_ONLY, Locale.getDefault()).format(Date(pollAt))
         val error = notificationStorage.lastImapPollError
         binding.tvEmailPollStatus.visibility = View.VISIBLE
         if (error.isNotBlank()) {

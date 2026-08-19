@@ -6,7 +6,8 @@ import android.provider.Settings
 object ScreenTimeoutController {
 
     /** 常亮期间使用的熄屏超时：30 分钟 */
-    private const val KEEP_ON_TIMEOUT_MS = 30 * 60 * 1000
+    private const val KEEP_ON_TIMEOUT_MS = (30 * TimeConstants.ONE_MINUTE_MS).toInt()
+    private const val DEFAULT_SCREEN_OFF_TIMEOUT_MS = (30 * TimeConstants.ONE_SECOND_MS).toInt()
 
     fun saveAndExtend(context: Context, settingsStorage: SettingsStorage) {
         if (!BrightnessController.canWriteSettings(context)) return
@@ -14,7 +15,7 @@ object ScreenTimeoutController {
             val current = Settings.System.getInt(
                 context.contentResolver,
                 Settings.System.SCREEN_OFF_TIMEOUT,
-                30_000
+                DEFAULT_SCREEN_OFF_TIMEOUT_MS
             )
             settingsStorage.savedScreenTimeout = current
         }

@@ -44,10 +44,10 @@ class ScreenKeepOnController(context: Context) {
         @Suppress("DEPRECATION")
         wakeLock = powerManager.newWakeLock(
             PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
-            "DDTask:KeepScreenOn"
+            WAKE_LOCK_TAG
         ).apply {
             setReferenceCounted(false)
-            acquire(RENEW_INTERVAL_MS + 60_000L)
+            acquire(RENEW_INTERVAL_MS + WAKE_LOCK_EXTRA_MS)
         }
     }
 
@@ -64,6 +64,8 @@ class ScreenKeepOnController(context: Context) {
     }
 
     companion object {
-        private const val RENEW_INTERVAL_MS = 5 * 60 * 1000L
+        private const val RENEW_INTERVAL_MS = 5 * TimeConstants.ONE_MINUTE_MS
+        private const val WAKE_LOCK_EXTRA_MS = TimeConstants.ONE_MINUTE_MS
+        private const val WAKE_LOCK_TAG = "DDTask:KeepScreenOn"
     }
 }

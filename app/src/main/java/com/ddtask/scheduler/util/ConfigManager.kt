@@ -44,25 +44,25 @@ class ConfigManager(private val context: Context) {
     fun importJson(json: String) {
         val trimmed = json.trim()
         if (trimmed.isEmpty()) {
-            throw IllegalArgumentException("empty_json")
+            throw IllegalArgumentException(ConfigImportErrors.EMPTY_JSON)
         }
 
         val root = try {
             JsonParser.parseString(trimmed).asJsonObject
         } catch (e: JsonSyntaxException) {
-            throw IllegalArgumentException("invalid_json", e)
+            throw IllegalArgumentException(ConfigImportErrors.INVALID_JSON, e)
         }
 
         val version = root.get("version")?.takeIf { it.isJsonPrimitive }?.asInt ?: 1
         if (version <= 0 || version > AppConfigExport.CURRENT_VERSION) {
-            throw IllegalArgumentException("unsupported_version")
+            throw IllegalArgumentException(ConfigImportErrors.UNSUPPORTED_VERSION)
         }
 
         val config = try {
             gson.fromJson(trimmed, AppConfigExport::class.java)
         } catch (e: JsonSyntaxException) {
-            throw IllegalArgumentException("invalid_json", e)
-        } ?: throw IllegalArgumentException("invalid_json")
+            throw IllegalArgumentException(ConfigImportErrors.INVALID_JSON, e)
+        } ?: throw IllegalArgumentException(ConfigImportErrors.INVALID_JSON)
 
         val keywordsConfigured = resolveKeywordsConfigured(root, config)
         applyConfig(config, keywordsConfigured)
@@ -98,8 +98,10 @@ class ConfigManager(private val context: Context) {
         notificationStorage.recipientEmail = config.recipientEmail
         notificationStorage.senderEmail = config.senderEmail
         notificationStorage.senderPassword = config.senderPassword
-        notificationStorage.smtpHost = config.smtpHost.ifBlank { "smtp.qq.com" }
-        notificationStorage.smtpPort = config.smtpPort.takeIf { it in 1..65535 } ?: 465
+        notificationStorage.smtpHost = config.smtpHost.ifBlank { EmailDefaults.DEFAULT_SMTP_HOST }
+        notificationStorage.smtpPort = config.smtpPort
+            .takeIf { it in EmailDefaults.MIN_PORT..EmailDefaults.MAX_PORT }
+            ?: EmailDefaults.DEFAULT_SMTP_PORT
         notificationStorage.autoOpenDingTalkEnabled = config.autoOpenDingTalkEnabled
         notificationStorage.closeDingTalkEnabled = config.closeDingTalkEnabled
         notificationStorage.triggerKeywords = config.triggerKeywords.ifBlank {

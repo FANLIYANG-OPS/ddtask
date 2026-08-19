@@ -1,5 +1,7 @@
 package com.ddtask.scheduler.model
 
+import com.ddtask.scheduler.util.EmailDefaults
+
 /** 导出/导入 JSON；兼容 v1（无关键字/关闭钉钉）、v2、v3（邮件触发）。 */
 data class AppConfigExport(
     val version: Int = CURRENT_VERSION,
@@ -12,7 +14,7 @@ data class AppConfigExport(
     val senderEmail: String = "",
     val senderPassword: String = "",
     val smtpHost: String = "",
-    val smtpPort: Int = 465,
+    val smtpPort: Int = EmailDefaults.DEFAULT_SMTP_PORT,
     val autoOpenDingTalkEnabled: Boolean = false,
     val closeDingTalkEnabled: Boolean = false,
     val triggerKeywords: String = "",

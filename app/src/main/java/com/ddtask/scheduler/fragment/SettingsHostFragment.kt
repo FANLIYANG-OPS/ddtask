@@ -14,7 +14,9 @@ import com.ddtask.scheduler.R
 import com.ddtask.scheduler.databinding.DialogConfigIoBinding
 import com.ddtask.scheduler.databinding.FragmentSettingsHostBinding
 import com.ddtask.scheduler.util.ClockInDetector
+import com.ddtask.scheduler.util.ConfigImportErrors
 import com.ddtask.scheduler.util.ConfigManager
+import com.ddtask.scheduler.util.EmailDefaults
 import com.ddtask.scheduler.util.EmailConfigHelper
 import com.ddtask.scheduler.util.EmailPollingController
 import com.ddtask.scheduler.util.EmailSender
@@ -145,7 +147,7 @@ class SettingsHostFragment : Fragment() {
             sender = binding.etSenderEmail.text?.toString()?.trim().orEmpty(),
             password = binding.etSenderPassword.text?.toString().orEmpty(),
             host = binding.etSmtpHost.text?.toString()?.trim().orEmpty(),
-            port = binding.etSmtpPort.text?.toString()?.trim()?.toIntOrNull() ?: -1
+            port = binding.etSmtpPort.text?.toString()?.trim()?.toIntOrNull() ?: EmailDefaults.INVALID_PORT
         )
         if (!EmailConfigHelper.save(requireContext(), notificationStorage, form)) return
         EmailPollingController.sync(requireContext())
@@ -248,9 +250,9 @@ class SettingsHostFragment : Fragment() {
             Toast.makeText(requireContext(), R.string.config_import_success, Toast.LENGTH_SHORT).show()
         } catch (e: IllegalArgumentException) {
             val message = when (e.message) {
-                "empty_json" -> getString(R.string.config_import_empty)
-                "invalid_json" -> getString(R.string.config_import_invalid)
-                "unsupported_version" -> getString(R.string.config_import_unsupported)
+                ConfigImportErrors.EMPTY_JSON -> getString(R.string.config_import_empty)
+                ConfigImportErrors.INVALID_JSON -> getString(R.string.config_import_invalid)
+                ConfigImportErrors.UNSUPPORTED_VERSION -> getString(R.string.config_import_unsupported)
                 else -> getString(R.string.config_import_failed, e.message.orEmpty())
             }
             Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
@@ -260,7 +262,7 @@ class SettingsHostFragment : Fragment() {
     private fun copyToClipboard(text: String) {
         if (text.isBlank()) return
         val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.setPrimaryClip(ClipData.newPlainText("ddtask_config", text))
+        clipboard.setPrimaryClip(ClipData.newPlainText(ConfigImportErrors.CLIPBOARD_LABEL, text))
         Toast.makeText(requireContext(), R.string.config_copied, Toast.LENGTH_SHORT).show()
     }
 }

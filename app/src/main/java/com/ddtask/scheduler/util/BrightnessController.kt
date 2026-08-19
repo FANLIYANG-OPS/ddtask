@@ -7,6 +7,7 @@ import android.provider.Settings
 object BrightnessController {
 
     private const val MIN_BRIGHTNESS = 1
+    private const val DEFAULT_BRIGHTNESS_FALLBACK = 128
 
     fun canWriteSettings(context: Context): Boolean {
         return Settings.System.canWrite(context)
@@ -17,7 +18,7 @@ object BrightnessController {
         val current = Settings.System.getInt(
             context.contentResolver,
             Settings.System.SCREEN_BRIGHTNESS,
-            128
+            DEFAULT_BRIGHTNESS_FALLBACK
         )
         settingsStorage.savedBrightness = current
     }

@@ -59,7 +59,7 @@ class ScheduleCalculator(context: Context) {
 
     private fun baseChineseWorkdays(hour: Int, minute: Int): Long {
         val calendar = Calendar.getInstance()
-        repeat(90) {
+        repeat(MAX_WORKDAY_SEARCH_DAYS) {
             calendar.set(Calendar.SECOND, 0)
             calendar.set(Calendar.MILLISECOND, 0)
             calendar.set(Calendar.HOUR_OF_DAY, hour)
@@ -90,12 +90,13 @@ class ScheduleCalculator(context: Context) {
 
     /** 仅在设定时刻之后随机延后 0~60s，避免多任务同一秒触发，且不提前打开钉钉。 */
     private fun applyJitter(baseMs: Long): Long {
-        val jitterMs = Random.nextInt(0, JITTER_SECONDS + 1) * 1000L
+        val jitterMs = Random.nextInt(0, JITTER_SECONDS + 1) * TimeConstants.MS_PER_SECOND
         return baseMs + jitterMs
     }
 
     companion object {
         private const val JITTER_SECONDS = 60
+        private const val MAX_WORKDAY_SEARCH_DAYS = 90
 
         fun cronFromTime(hour: Int, minute: Int): String = "$minute $hour * * *"
 

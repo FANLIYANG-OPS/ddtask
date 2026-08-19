@@ -10,6 +10,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.ddtask.scheduler.R
 import com.ddtask.scheduler.ReturnProxyActivity
+import com.ddtask.scheduler.util.NotificationIds
 
 /**
  * 短暂前台服务，用于从后台（如通知监听）合法拉起主界面。
@@ -22,7 +23,7 @@ class ReturnToAppService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel()
-            startForeground(NOTIFICATION_ID, createNotification())
+            startForeground(NotificationIds.RETURN_TO_APP, createNotification())
         }
 
         startActivity(
@@ -76,6 +77,5 @@ class ReturnToAppService : Service() {
     companion object {
         const val ACTION_RETURN = "com.ddtask.scheduler.ACTION_RETURN_TO_APP"
         private const val CHANNEL_ID = "return_to_app"
-        private const val NOTIFICATION_ID = 2002
     }
 }

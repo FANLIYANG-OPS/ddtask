@@ -11,7 +11,9 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.ddtask.scheduler.MainActivity
 import com.ddtask.scheduler.R
+import com.ddtask.scheduler.util.NotificationIds
 import com.ddtask.scheduler.util.PendingIntentCompat
+import com.ddtask.scheduler.util.PendingIntentRequestCodes
 import com.ddtask.scheduler.util.ScreenKeepOnController
 
 /** 前台服务：定时触发后保持屏幕常亮，通知栏可手动停止。 */
@@ -43,7 +45,7 @@ class ScreenControlService : Service() {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForeground(NOTIFICATION_ID, createNotification())
+            startForeground(NotificationIds.SCREEN_CONTROL, createNotification())
         }
 
         keepOnController?.start()
@@ -72,12 +74,12 @@ class ScreenControlService : Service() {
 
     private fun createNotification(): Notification {
         val openIntent = PendingIntent.getActivity(
-            this, 0,
+            this, PendingIntentRequestCodes.SCREEN_CONTROL_OPEN_APP,
             Intent(this, MainActivity::class.java),
             pendingIntentFlags()
         )
         val stopIntent = PendingIntent.getService(
-            this, 1,
+            this, PendingIntentRequestCodes.SCREEN_CONTROL_STOP,
             Intent(this, ScreenControlService::class.java).apply { action = ACTION_STOP },
             pendingIntentFlags()
         )
@@ -96,6 +98,5 @@ class ScreenControlService : Service() {
     companion object {
         const val ACTION_STOP = "com.ddtask.scheduler.STOP_SCREEN_CONTROL"
         private const val CHANNEL_ID = "screen_control"
-        private const val NOTIFICATION_ID = 1001
     }
 }
