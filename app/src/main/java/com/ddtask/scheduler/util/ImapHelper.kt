@@ -16,4 +16,13 @@ object ImapHelper {
     }
 
     fun defaultPort(): Int = DEFAULT_IMAP_PORT
+
+    /** 网易系邮箱要求连接后发送 IMAP ID，否则会报 Unsafe Login。 */
+    fun requiresImapId(host: String): Boolean {
+        val h = host.trim().lowercase()
+        return h.endsWith(".163.com") ||
+            h.endsWith(".126.com") ||
+            h.endsWith(".188.com") ||
+            h.endsWith(".yeah.net")
+    }
 }

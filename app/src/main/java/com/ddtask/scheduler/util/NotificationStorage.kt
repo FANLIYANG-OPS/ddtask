@@ -170,6 +170,24 @@ class NotificationStorage(context: Context) {
         lastEmailTriggerSummary = summary
     }
 
+    var lastImapPollAt: Long
+        get() = prefs.getLong(KEY_LAST_IMAP_POLL_AT, 0L)
+        private set(value) = prefs.edit().putLong(KEY_LAST_IMAP_POLL_AT, value).apply()
+
+    var lastImapPollError: String
+        get() = prefs.getString(KEY_LAST_IMAP_POLL_ERROR, "").orEmpty()
+        private set(value) = prefs.edit().putString(KEY_LAST_IMAP_POLL_ERROR, value).apply()
+
+    fun recordImapPoll(error: String?) {
+        lastImapPollAt = System.currentTimeMillis()
+        lastImapPollError = error.orEmpty()
+    }
+
+    fun resetImapCursor() {
+        lastProcessedImapUid = 0L
+        lastImapPollError = ""
+    }
+
     companion object {
         private const val PREFS_NAME = "ddtask_notification"
         private const val KEY_ENABLED = "email_notify_enabled"
@@ -189,6 +207,8 @@ class NotificationStorage(context: Context) {
         private const val KEY_LAST_IMAP_UID = "last_imap_uid"
         private const val KEY_LAST_EMAIL_TRIGGER_AT = "last_email_trigger_at"
         private const val KEY_LAST_EMAIL_TRIGGER_SUMMARY = "last_email_trigger_summary"
+        private const val KEY_LAST_IMAP_POLL_AT = "last_imap_poll_at"
+        private const val KEY_LAST_IMAP_POLL_ERROR = "last_imap_poll_error"
         private const val KEY_KEYWORDS_CONFIGURED = "keywords_configured"
         private const val KEY_LAST_OPEN_AT = "last_open_at"
         private const val KEY_LAST_OPEN_SUMMARY = "last_open_summary"

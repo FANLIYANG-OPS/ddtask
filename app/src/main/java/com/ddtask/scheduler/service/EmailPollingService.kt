@@ -87,13 +87,15 @@ class EmailPollingService : Service() {
         val storage = NotificationStorage(this)
         if (!storage.emailTriggerEnabled || !storage.isSenderMailboxReady()) return
 
-        val emails = EmailReceiver.pollNewMessages(this)
-        if (emails.isEmpty()) return
+        val result = EmailReceiver.pollNewMessages(this)
+        storage.recordImapPoll(result.error)
+
+        if (result.emails.isEmpty()) return
 
         val handler = ClockInActionHandler(this)
-        emails.forEach { email ->
-            handler.handleIncomingText(email.text, ClockInSource.EMAIL)
-            storage.recordEmailTrigger(email.text)
+        result.emails.forEach { email ->
+            handler.handleIncomingText(email.body, ClockInSource.EMAIL)
+            storage.recordEmailTrigger(email.body)
         }
     }
 

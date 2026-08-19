@@ -84,6 +84,14 @@
                     android:visibility="gone" />
 
                 <TextView
+                    android:id="@+id/tv_email_poll_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:visibility="gone" />
+
+                <TextView
                     android:id="@+id/tv_last_email_trigger"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

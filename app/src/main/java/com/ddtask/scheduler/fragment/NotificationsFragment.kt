@@ -85,6 +85,9 @@ class NotificationsFragment : Fragment() {
                 return@setOnCheckedChangeListener
             }
             notificationStorage.emailTriggerEnabled = isChecked
+            if (isChecked) {
+                notificationStorage.resetImapCursor()
+            }
             EmailPollingController.sync(requireContext())
         }
 
@@ -319,8 +322,10 @@ class NotificationsFragment : Fragment() {
         if (sender.isNotBlank() && notificationStorage.emailTriggerEnabled) {
             binding.tvEmailTriggerAddress.visibility = View.VISIBLE
             binding.tvEmailTriggerAddress.text = getString(R.string.email_trigger_address, sender)
+            updateEmailPollStatus()
         } else {
             binding.tvEmailTriggerAddress.visibility = View.GONE
+            binding.tvEmailPollStatus.visibility = View.GONE
         }
 
         val lastAt = notificationStorage.lastEmailTriggerAt
@@ -335,5 +340,27 @@ class NotificationsFragment : Fragment() {
             time,
             notificationStorage.lastEmailTriggerSummary
         )
+    }
+
+    private fun updateEmailPollStatus() {
+        val pollAt = notificationStorage.lastImapPollAt
+        if (pollAt <= 0L) {
+            binding.tvEmailPollStatus.visibility = View.GONE
+            return
+        }
+        val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(pollAt))
+        val error = notificationStorage.lastImapPollError
+        binding.tvEmailPollStatus.visibility = View.VISIBLE
+        if (error.isNotBlank()) {
+            binding.tvEmailPollStatus.text = getString(R.string.email_poll_status_error, error, time)
+            binding.tvEmailPollStatus.setTextColor(
+                ContextCompat.getColor(requireContext(), R.color.status_error)
+            )
+        } else {
+            binding.tvEmailPollStatus.text = getString(R.string.email_poll_status_ok, time)
+            binding.tvEmailPollStatus.setTextColor(
+                ContextCompat.getColor(requireContext(), R.color.status_ok)
+            )
+        }
     }
 }

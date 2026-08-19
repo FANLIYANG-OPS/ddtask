@@ -48,11 +48,18 @@ object EmailConfigHelper {
             return false
         }
 
+        val mailboxChanged = storage.senderEmail != form.sender ||
+            storage.senderPassword != form.password ||
+            storage.smtpHost != form.host
+
         storage.recipientEmail = form.recipient
         storage.senderEmail = form.sender
         storage.senderPassword = form.password
         storage.smtpHost = form.host
         storage.smtpPort = form.port
+        if (mailboxChanged) {
+            storage.resetImapCursor()
+        }
         Toast.makeText(context, R.string.email_settings_saved, Toast.LENGTH_SHORT).show()
         return true
     }
