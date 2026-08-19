@@ -36,9 +36,7 @@ class ConfigManager(private val context: Context) {
             successKeywords = notificationStorage.successKeywords,
             returnKeywords = notificationStorage.returnKeywords,
             keywordsConfigured = notificationStorage.keywordsConfigured,
-            emailTriggerEnabled = notificationStorage.emailTriggerEnabled,
-            imapHost = notificationStorage.imapHost,
-            imapPort = notificationStorage.imapPort
+            emailTriggerEnabled = notificationStorage.emailTriggerEnabled
         )
         return gson.toJson(config)
     }
@@ -116,13 +114,6 @@ class ConfigManager(private val context: Context) {
         notificationStorage.keywordsConfigured = keywordsConfigured
         if (config.version >= 3) {
             notificationStorage.emailTriggerEnabled = config.emailTriggerEnabled
-            notificationStorage.imapHost = config.imapHost.ifBlank {
-                ImapHelper.resolveHost(notificationStorage.smtpHost)
-            }
-            notificationStorage.imapPort = config.imapPort.takeIf { it in 1..65535 }
-                ?: ImapHelper.defaultPort()
-        } else {
-            notificationStorage.syncImapFromSmtp()
         }
 
         alarmScheduler.rescheduleAll()

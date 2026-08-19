@@ -23,7 +23,7 @@ object EmailReceiver {
     /** 拉取尚未处理的新邮件；失败时返回空列表。 */
     fun pollNewMessages(context: Context): List<IncomingEmail> {
         val storage = NotificationStorage(context.applicationContext)
-        if (!storage.isConfigured() || !storage.emailTriggerEnabled) return emptyList()
+        if (!storage.isSenderMailboxReady() || !storage.emailTriggerEnabled) return emptyList()
 
         var folder: Folder? = null
         var store: javax.mail.Store? = null
@@ -31,7 +31,7 @@ object EmailReceiver {
             val session = Session.getInstance(Properties())
             store = session.getStore("imaps")
             store.connect(
-                storage.imapHost,
+                storage.resolvedImapHost(),
                 storage.senderEmail,
                 storage.senderPassword
             )

@@ -185,10 +185,10 @@ class NotificationsFragment : Fragment() {
     }
 
     private fun ensureEmailConfigured(): Boolean {
-        if (notificationStorage.isConfigured()) return true
+        if (notificationStorage.isSenderMailboxReady()) return true
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.email_config_required_title)
-            .setMessage(R.string.email_config_required_message)
+            .setMessage(R.string.email_trigger_config_required_message)
             .setPositiveButton(R.string.go_settings) { _, _ ->
                 (activity as? MainActivity)?.openTab(MainActivity.TAB_SETTINGS)
             }

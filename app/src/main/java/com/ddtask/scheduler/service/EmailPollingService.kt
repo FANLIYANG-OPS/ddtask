@@ -85,7 +85,7 @@ class EmailPollingService : Service() {
 
     private fun pollOnce() {
         val storage = NotificationStorage(this)
-        if (!storage.emailTriggerEnabled || !storage.isConfigured()) return
+        if (!storage.emailTriggerEnabled || !storage.isSenderMailboxReady()) return
 
         val emails = EmailReceiver.pollNewMessages(this)
         if (emails.isEmpty()) return

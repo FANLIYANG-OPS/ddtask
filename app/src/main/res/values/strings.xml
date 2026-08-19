@@ -116,8 +116,9 @@
     <string name="auto_open_dingtalk_enabled">手动打卡</string>
     <string name="auto_open_dingtalk_enabled_desc">监听短信、QQ 等通知，匹配关键字后打开钉钉（第三方 App 可能被系统杀后台）</string>
     <string name="email_trigger_enabled">邮件触发打卡</string>
-    <string name="email_trigger_enabled_desc">DDTask 前台轮询发件邮箱收件箱，收到含关键字的邮件即触发，不依赖 QQ/微信</string>
-    <string name="email_trigger_address">请向 %1$s 发送含关键字的邮件（主题或正文均可）</string>
+    <string name="email_trigger_enabled_desc">复用「设置」中的发件邮箱，向该邮箱发送含关键字的邮件即可触发，无需额外配置</string>
+    <string name="email_trigger_address">向发件邮箱 %1$s 发送邮件（与发通知共用同一账号）</string>
+    <string name="email_trigger_config_required_message">请先在「设置」页配置发件邮箱与 SMTP（与打卡通知邮件相同），再开启邮件触发。</string>
     <string name="last_email_trigger">上次邮件触发：%1$s\n内容：%2$s</string>
     <string name="email_polling_channel">邮件监听</string>
     <string name="email_polling_title">邮件触发监听中</string>

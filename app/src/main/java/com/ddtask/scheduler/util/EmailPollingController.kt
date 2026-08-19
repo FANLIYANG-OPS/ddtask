@@ -10,7 +10,7 @@ object EmailPollingController {
 
     fun sync(context: Context) {
         val storage = NotificationStorage(context.applicationContext)
-        if (storage.emailTriggerEnabled && storage.isConfigured()) {
+        if (storage.emailTriggerEnabled && storage.isSenderMailboxReady()) {
             start(context)
         } else {
             stop(context)

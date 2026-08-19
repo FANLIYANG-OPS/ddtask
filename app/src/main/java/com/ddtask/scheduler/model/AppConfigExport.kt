@@ -19,9 +19,7 @@ data class AppConfigExport(
     val successKeywords: String = "",
     val returnKeywords: String = "",
     val keywordsConfigured: Boolean = false,
-    val emailTriggerEnabled: Boolean = false,
-    val imapHost: String = "",
-    val imapPort: Int = 993
+    val emailTriggerEnabled: Boolean = false
 ) {
     companion object {
         /** v3 起增加邮件触发打卡。 */

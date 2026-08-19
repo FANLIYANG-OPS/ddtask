@@ -59,18 +59,15 @@ class NotificationStorage(context: Context) {
         get() = prefs.getBoolean(KEY_CLOSE_DINGTALK, false)
         set(value) = prefs.edit().putBoolean(KEY_CLOSE_DINGTALK, value).apply()
 
-    /** 邮件触发：轮询发件邮箱收件箱，不依赖 QQ/微信通知。 */
+    /** 邮件触发：轮询发件邮箱收件箱，复用下方 SMTP/发件箱配置，无需额外设置。 */
     var emailTriggerEnabled: Boolean
         get() = prefs.getBoolean(KEY_EMAIL_TRIGGER, false)
         set(value) = prefs.edit().putBoolean(KEY_EMAIL_TRIGGER, value).apply()
 
-    var imapHost: String
-        get() = prefs.getString(KEY_IMAP_HOST, ImapHelper.resolveHost(smtpHost)).orEmpty()
-        set(value) = prefs.edit().putString(KEY_IMAP_HOST, value).apply()
+    /** 由 SMTP 地址自动推断 IMAP 服务器（如 smtp.qq.com → imap.qq.com）。 */
+    fun resolvedImapHost(): String = ImapHelper.resolveHost(smtpHost)
 
-    var imapPort: Int
-        get() = prefs.getInt(KEY_IMAP_PORT, ImapHelper.defaultPort())
-        set(value) = prefs.edit().putInt(KEY_IMAP_PORT, value).apply()
+    fun resolvedImapPort(): Int = ImapHelper.defaultPort()
 
     var lastProcessedImapUid: Long
         get() = prefs.getLong(KEY_LAST_IMAP_UID, 0L)
@@ -83,14 +80,6 @@ class NotificationStorage(context: Context) {
     var lastEmailTriggerSummary: String
         get() = prefs.getString(KEY_LAST_EMAIL_TRIGGER_SUMMARY, "").orEmpty()
         private set(value) = prefs.edit().putString(KEY_LAST_EMAIL_TRIGGER_SUMMARY, value).apply()
-
-    /** 同步 IMAP 地址（SMTP 变更后调用）。 */
-    fun syncImapFromSmtp() {
-        imapHost = ImapHelper.resolveHost(smtpHost)
-        if (imapPort !in 1..65535) {
-            imapPort = ImapHelper.defaultPort()
-        }
-    }
 
     var keywordsConfigured: Boolean
         get() = prefs.getBoolean(KEY_KEYWORDS_CONFIGURED, false)
@@ -111,6 +100,13 @@ class NotificationStorage(context: Context) {
     fun isConfigured(): Boolean {
         return recipientEmail.isNotBlank() &&
             senderEmail.isNotBlank() &&
+            senderPassword.isNotBlank() &&
+            smtpHost.isNotBlank()
+    }
+
+    /** 发件邮箱是否可用于 IMAP 收信（与发通知共用同一套账号密码）。 */
+    fun isSenderMailboxReady(): Boolean {
+        return senderEmail.isNotBlank() &&
             senderPassword.isNotBlank() &&
             smtpHost.isNotBlank()
     }
@@ -190,8 +186,6 @@ class NotificationStorage(context: Context) {
         private const val KEY_RETURN_KEYWORDS = "return_keywords"
         private const val KEY_CLOSE_DINGTALK = "close_dingtalk_enabled"
         private const val KEY_EMAIL_TRIGGER = "email_trigger_enabled"
-        private const val KEY_IMAP_HOST = "imap_host"
-        private const val KEY_IMAP_PORT = "imap_port"
         private const val KEY_LAST_IMAP_UID = "last_imap_uid"
         private const val KEY_LAST_EMAIL_TRIGGER_AT = "last_email_trigger_at"
         private const val KEY_LAST_EMAIL_TRIGGER_SUMMARY = "last_email_trigger_summary"
