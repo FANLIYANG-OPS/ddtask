@@ -112,9 +112,8 @@ class ConfigManager(private val context: Context) {
             ClockInDetector.defaultReturnKeywordsText()
         }
         notificationStorage.keywordsConfigured = keywordsConfigured
-        if (config.version >= 3) {
-            notificationStorage.emailTriggerEnabled = config.emailTriggerEnabled
-        }
+        // v1/v2 导出无此字段，Gson 默认为 false；始终写入以免覆盖导入后残留旧值
+        notificationStorage.emailTriggerEnabled = config.emailTriggerEnabled
 
         alarmScheduler.rescheduleAll()
         EmailPollingController.sync(context)
